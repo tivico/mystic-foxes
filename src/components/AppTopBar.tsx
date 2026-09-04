@@ -13,6 +13,7 @@ import {
   Moon,
   Sunset,
   Sparkles,
+  Sliders,
 } from 'lucide-react';
 
 interface AppTopBarProps {
@@ -24,6 +25,7 @@ interface AppTopBarProps {
   onOpenMobileMenu: () => void;
   onOpenAtmosphere: () => void;
   onOpenSaveBackup: () => void;
+  onOpenAmbientMixer?: () => void;
 }
 
 export const AppTopBar: React.FC<AppTopBarProps> = ({
@@ -35,6 +37,7 @@ export const AppTopBar: React.FC<AppTopBarProps> = ({
   onOpenMobileMenu,
   onOpenAtmosphere,
   onOpenSaveBackup,
+  onOpenAmbientMixer,
 }) => {
   const [isChimeActive, setIsChimeActive] = useState(false);
 
@@ -150,6 +153,19 @@ export const AppTopBar: React.FC<AppTopBarProps> = ({
           <Heart size={13} className="text-rose-500 fill-rose-400" />
           <span>{totalPetCount}</span>
         </div>
+
+        {/* Ambient Sound & Sleep Timer Trigger */}
+        {onOpenAmbientMixer && (
+          <button
+            type="button"
+            onClick={onOpenAmbientMixer}
+            className="p-1.5 sm:px-2.5 sm:py-1 rounded-xl bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-200/80 dark:border-stone-700 hover:border-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-all text-xs font-bold shadow-2xs flex items-center gap-1 cursor-pointer"
+            title="開啟白噪音混音與睡眠定時器"
+          >
+            <Sliders size={13} className="text-amber-500" />
+            <span className="hidden lg:inline">白噪音</span>
+          </button>
+        )}
 
         {/* Zen Wind Chime Audio Trigger */}
         <motion.button

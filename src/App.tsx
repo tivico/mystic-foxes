@@ -545,6 +545,7 @@ export default function App() {
           onOpenMobileMenu={() => setIsMobileSidebarOpen(true)}
           onOpenAtmosphere={() => setIsAtmosphereOpen(true)}
           onOpenSaveBackup={() => setIsSaveBackupOpen(true)}
+          onOpenAmbientMixer={() => setIsAmbientMixerOpen(true)}
         />
 
         {/* Main Container */}

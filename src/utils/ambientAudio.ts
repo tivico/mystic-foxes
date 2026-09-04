@@ -13,15 +13,23 @@ class AmbientSoundEngine {
   private chimesGain: GainNode | null = null;
   private masterGain: GainNode | null = null;
 
+  // Volume & Fade Management for Hearing Protection & Sleep Timer
+  private masterVolume = 0.8;
+  private fadeTimeout: number | null = null;
+  private fadeState: 'idle' | 'fade-in' | 'fade-out' = 'idle';
+
   // Timers for intermittent sounds
   private campfireTimer: number | null = null;
   private cricketsTimer: number | null = null;
   private chimesTimer: number | null = null;
 
   // Ensure AudioContext is initialized on user gesture
-  private initContext() {
+  private initContext(startSilent = false) {
     if (!this.ctx) {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext })
+          .webkitAudioContext;
       this.ctx = new AudioCtx();
     }
     if (this.ctx.state === 'suspended') {
@@ -29,7 +37,8 @@ class AmbientSoundEngine {
     }
     if (!this.masterGain && this.ctx) {
       this.masterGain = this.ctx.createGain();
-      this.masterGain.gain.setValueAtTime(0.8, this.ctx.currentTime);
+      const initialGain = startSilent ? 0.0001 : this.masterVolume;
+      this.masterGain.gain.setValueAtTime(initialGain, this.ctx.currentTime);
       this.masterGain.connect(this.ctx.destination);
     }
   }
@@ -306,8 +315,14 @@ class AmbientSoundEngine {
   }
 
   // Master mute or pause
-  public stopAll() {
+  public stopAll(resetMasterGain = false) {
     this.isRunning = false;
+    if (this.fadeTimeout) {
+      clearTimeout(this.fadeTimeout);
+      this.fadeTimeout = null;
+    }
+    this.fadeState = 'idle';
+
     if (this.campfireTimer) clearTimeout(this.campfireTimer);
     if (this.cricketsTimer) clearTimeout(this.cricketsTimer);
     if (this.chimesTimer) clearTimeout(this.chimesTimer);
@@ -317,7 +332,116 @@ class AmbientSoundEngine {
       [this.breezeGain, this.rainGain, this.campfireGain, this.cricketsGain, this.chimesGain].forEach((g) => {
         if (g) g.gain.setTargetAtTime(0, now, 0.1);
       });
+
+      if (resetMasterGain && this.masterGain) {
+        this.masterGain.gain.cancelScheduledValues(now);
+        this.masterGain.gain.setValueAtTime(this.masterVolume, now);
+      }
     }
+  }
+
+  /**
+   * 聽覺保護：漸進式音量淡入 (Fade-in)
+   * 剛開啟或切換預設時，由靜音緩慢滑升至目標主音量，防止突發爆音驚嚇。
+   */
+  public fadeIn(durationSec = 2.5, targetVolume?: number) {
+    this.initContext(true);
+    this.isRunning = true;
+
+    if (targetVolume !== undefined) {
+      this.masterVolume = Math.max(0.05, Math.min(1.0, targetVolume));
+    }
+
+    if (this.fadeTimeout) {
+      clearTimeout(this.fadeTimeout);
+      this.fadeTimeout = null;
+    }
+
+    if (this.ctx && this.masterGain) {
+      const now = this.ctx.currentTime;
+      this.fadeState = 'fade-in';
+      this.masterGain.gain.cancelScheduledValues(now);
+
+      // Start from current gain or near-zero
+      const currentVal = Math.max(0.0001, this.masterGain.gain.value);
+      this.masterGain.gain.setValueAtTime(currentVal, now);
+      this.masterGain.gain.exponentialRampToValueAtTime(
+        Math.max(0.01, this.masterVolume),
+        now + durationSec
+      );
+
+      this.fadeTimeout = window.setTimeout(() => {
+        if (this.fadeState === 'fade-in') {
+          this.fadeState = 'idle';
+        }
+      }, durationSec * 1000);
+    }
+  }
+
+  /**
+   * 睡眠定時：平滑漸進式淡出 (Fade-out)
+   * 定時倒數結束或睡眠時間到時，音量緩慢降至無聲，避免突兀中斷破壞入睡安寧。
+   */
+  public fadeOut(durationSec = 5.0, onComplete?: () => void) {
+    if (!this.isRunning || !this.ctx || !this.masterGain) {
+      onComplete?.();
+      return;
+    }
+
+    if (this.fadeTimeout) {
+      clearTimeout(this.fadeTimeout);
+      this.fadeTimeout = null;
+    }
+
+    const now = this.ctx.currentTime;
+    this.fadeState = 'fade-out';
+    this.masterGain.gain.cancelScheduledValues(now);
+
+    const currentVal = Math.max(0.0001, this.masterGain.gain.value);
+    this.masterGain.gain.setValueAtTime(currentVal, now);
+    this.masterGain.gain.exponentialRampToValueAtTime(0.0001, now + durationSec);
+
+    this.fadeTimeout = window.setTimeout(() => {
+      this.stopAll(false);
+      this.fadeState = 'idle';
+      onComplete?.();
+    }, durationSec * 1000);
+  }
+
+  /**
+   * 取消任何進行中的淡入/淡出，並恢復為一般指定音量
+   */
+  public cancelFade() {
+    if (this.fadeTimeout) {
+      clearTimeout(this.fadeTimeout);
+      this.fadeTimeout = null;
+    }
+    this.fadeState = 'idle';
+    if (this.ctx && this.masterGain) {
+      const now = this.ctx.currentTime;
+      this.masterGain.gain.cancelScheduledValues(now);
+      this.masterGain.gain.setTargetAtTime(this.masterVolume, now, 0.1);
+    }
+  }
+
+  public setMasterVolume(vol: number) {
+    this.masterVolume = Math.max(0, Math.min(1.0, vol));
+    if (this.ctx && this.masterGain && this.fadeState === 'idle') {
+      const now = this.ctx.currentTime;
+      this.masterGain.gain.setTargetAtTime(this.masterVolume, now, 0.1);
+    }
+  }
+
+  public getMasterVolume(): number {
+    return this.masterVolume;
+  }
+
+  public getFadeState(): 'idle' | 'fade-in' | 'fade-out' {
+    return this.fadeState;
+  }
+
+  public getIsRunning(): boolean {
+    return this.isRunning;
   }
 }
 
