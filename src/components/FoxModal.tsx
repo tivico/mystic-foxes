@@ -127,12 +127,18 @@ export const FoxModal: React.FC<FoxModalProps> = ({
               <div className="flex items-center gap-2">
                 <span
                   className={`text-xs px-2.5 py-1 rounded-full font-semibold border ${
-                    fox.category === 'mythical'
+                    fox.isEasterEgg
+                      ? 'bg-amber-100 text-amber-900 border-amber-300 font-bold'
+                      : fox.category === 'mythical'
                       ? 'bg-purple-100 text-purple-800 border-purple-200'
                       : 'bg-emerald-50 text-emerald-800 border-emerald-200'
                   }`}
                 >
-                  {fox.category === 'mythical' ? '✨ 奇幻傳說靈獸' : '🐾 自然野生狐屬'}
+                  {fox.isEasterEgg
+                    ? '🥚 偽狐彩蛋專屬'
+                    : fox.category === 'mythical'
+                    ? '✨ 奇幻傳說靈獸'
+                    : '🐾 自然野生狐屬'}
                 </span>
                 <span className="text-xs text-stone-500 font-mono">
                   {fox.scientificName}
@@ -206,6 +212,13 @@ export const FoxModal: React.FC<FoxModalProps> = ({
                   <p className="text-xs sm:text-sm text-amber-800 font-medium mt-1">
                     {fox.subtitle}
                   </p>
+
+                  {fox.isEasterEgg && fox.easterEggNote && (
+                    <div className="mt-2.5 p-2.5 rounded-xl bg-amber-100/90 border border-amber-300 text-amber-950 text-xs font-semibold flex items-center gap-1.5">
+                      <span>💡</span>
+                      <span>{fox.easterEggNote}</span>
+                    </div>
+                  )}
 
                   <div className="mt-3 flex flex-wrap gap-1.5 justify-center sm:justify-start">
                     {fox.personalityTraits.map((trait, i) => (

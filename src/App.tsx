@@ -17,6 +17,7 @@ import { AmbientSoundMixer } from './components/AmbientSoundMixer';
 import { FoxPostcardAdventure } from './components/FoxPostcardAdventure';
 import { FoxBreathingGuide } from './components/FoxBreathingGuide';
 import { AtmosphereController } from './components/AtmosphereController';
+import { MythVsRealityView } from './components/MythVsRealityView';
 import { SeasonParticlesCanvas, SeasonType, TimeOfDay } from './components/SeasonParticlesCanvas';
 import { PwaInstallPrompt } from './components/PwaInstallPrompt';
 import { playPettingSound } from './utils/foxAudio';
@@ -378,6 +379,7 @@ export default function App() {
         onOpenPostcards={() => setIsPostcardsOpen(true)}
         onOpenBreathing={() => setIsBreathingOpen(true)}
         onOpenAtmosphere={() => setIsAtmosphereOpen(true)}
+        onOpenMythVsReality={() => handleSelectGameMode('myth-vs-reality')}
         totalPetCount={totalPetCount}
       />
 
@@ -556,6 +558,20 @@ export default function App() {
                   立即開始守護狐測驗 ✨
                 </motion.button>
               </motion.div>
+            </motion.div>
+          )}
+
+          {/* 4. 傳說 vs 現實：神話民俗與科學演化對照手帳 */}
+          {gameMode === 'myth-vs-reality' && (
+            <motion.div
+              key="myth-vs-reality-mode-view"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              <MythVsRealityView onViewFoxByName={handleViewFoxByName} />
             </motion.div>
           )}
         </AnimatePresence>

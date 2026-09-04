@@ -1,5 +1,5 @@
-export type HabitatType = 'all' | 'snow' | 'forest' | 'desert' | 'plateau' | 'mystic';
-export type FoxCategory = 'all' | 'real' | 'mythical';
+export type HabitatType = 'all' | 'snow' | 'forest' | 'desert' | 'plateau' | 'mystic' | 'grassland' | 'rainforest';
+export type FoxCategory = 'all' | 'real' | 'mythical' | 'easter-egg';
 
 export interface FoxPassiveSkill {
   name: string;
@@ -25,8 +25,8 @@ export interface FoxSpecies {
   name: string;
   englishName: string;
   scientificName: string;
-  category: 'real' | 'mythical';
-  habitat: 'snow' | 'forest' | 'desert' | 'plateau' | 'mystic';
+  category: 'real' | 'mythical' | 'easter-egg';
+  habitat: 'snow' | 'forest' | 'desert' | 'plateau' | 'mystic' | 'grassland' | 'rainforest';
   habitatLabel: string;
   themeColor: string; // Tailwind color class or hex
   accentBg: string;
@@ -42,6 +42,28 @@ export interface FoxSpecies {
   vocalization: FoxVocalization;
   funFacts: string[];
   cuteQuote: string;
+  isEasterEgg?: boolean;
+  easterEggNote?: string;
+}
+
+export interface MythVsRealityItem {
+  id: string;
+  title: string;
+  subtitle: string;
+  icon: string;
+  mythName: string;
+  realName: string;
+  mythCulture: string;
+  mythDescription: string;
+  mythSuperpower: string;
+  realFact: string;
+  scientificExplanation: string;
+  culturalInsight: string;
+  keyComparison: {
+    feature: string;
+    legendSays: string;
+    scienceSays: string;
+  }[];
 }
 
 export interface QuizQuestion {
@@ -133,7 +155,7 @@ export interface GardenToyItem {
   desc: string;
 }
 
-export type GamePlayMode = 'adopt' | 'idle' | 'encyclopedia';
+export type GamePlayMode = 'adopt' | 'idle' | 'encyclopedia' | 'myth-vs-reality';
 
 export interface GardenVisitor {
   id: string;

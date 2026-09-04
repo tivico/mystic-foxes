@@ -36,16 +36,24 @@ export const GameModeNav: React.FC<GameModeNavProps> = ({
     {
       id: 'encyclopedia' as GamePlayMode,
       label: '靈狐全圖鑑',
-      subtitle: '8 種物種資料庫',
+      subtitle: '18 種物種資料庫',
       icon: '📖',
-      badge: '冷知識測驗',
+      badge: '習性與冷知識',
       badgeColor: 'bg-amber-100 text-amber-800',
+    },
+    {
+      id: 'myth-vs-reality' as GamePlayMode,
+      label: '傳說 vs 現實',
+      subtitle: '神話民俗與科學演化',
+      icon: '✨',
+      badge: '深度手帳',
+      badgeColor: 'bg-purple-100 text-purple-800',
     },
   ];
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4">
-      <div className="bg-white/95 p-1.5 sm:p-2 rounded-3xl border border-amber-200/80 shadow-md backdrop-blur-md grid grid-cols-3 gap-1.5 sm:gap-2">
+    <div className="w-full max-w-5xl mx-auto px-4">
+      <div className="bg-white/95 p-1.5 sm:p-2 rounded-3xl border border-amber-200/80 shadow-md backdrop-blur-md grid grid-cols-2 md:grid-cols-4 gap-1.5 sm:gap-2">
         {tabs.map((tab) => {
           const isActive = currentMode === tab.id;
           return (

@@ -91,6 +91,19 @@ export const HabitatFilter: React.FC<HabitatFilterProps> = ({
           >
             <span>✨ 奇幻傳說</span>
           </motion.button>
+          <motion.button
+            type="button"
+            onClick={() => onSelectCategory('easter-egg')}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.96 }}
+            className={`flex items-center gap-1 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              selectedCategory === 'easter-egg'
+                ? 'bg-amber-600 text-white shadow-xs font-bold'
+                : 'text-stone-500 hover:text-stone-800'
+            }`}
+          >
+            <span>🥚 偽狐彩蛋</span>
+          </motion.button>
         </div>
       </div>
 

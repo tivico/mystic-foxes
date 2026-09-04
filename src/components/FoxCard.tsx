@@ -32,12 +32,18 @@ export const FoxCard: React.FC<FoxCardProps> = ({ fox, onSelect, onQuickPet }) =
       <div className="flex items-center justify-between gap-2 mb-3">
         <span
           className={`text-xs px-2.5 py-1 rounded-full font-medium border ${
-            fox.category === 'mythical'
+            fox.isEasterEgg
+              ? 'bg-amber-100 text-amber-900 border-amber-300 font-bold'
+              : fox.category === 'mythical'
               ? 'bg-purple-100 text-purple-700 border-purple-200'
               : 'bg-emerald-50 text-emerald-700 border-emerald-200'
           }`}
         >
-          {fox.category === 'mythical' ? '✨ 傳說神獸' : '🐾 自然物種'}
+          {fox.isEasterEgg
+            ? '🥚 偽狐彩蛋'
+            : fox.category === 'mythical'
+            ? '✨ 傳說神獸'
+            : '🐾 自然野生'}
         </span>
         <span className="text-xs text-stone-500 font-mono tracking-tight">
           {fox.habitatLabel.split('/')[0]}

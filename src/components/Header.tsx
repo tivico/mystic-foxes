@@ -9,6 +9,7 @@ interface HeaderProps {
   onOpenPostcards: () => void;
   onOpenBreathing: () => void;
   onOpenAtmosphere: () => void;
+  onOpenMythVsReality: () => void;
   totalPetCount: number;
 }
 
@@ -19,6 +20,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenPostcards,
   onOpenBreathing,
   onOpenAtmosphere,
+  onOpenMythVsReality,
   totalPetCount,
 }) => {
   const [isAmbientPlaying, setIsAmbientPlaying] = useState(false);
@@ -166,7 +168,21 @@ export const Header: React.FC<HeaderProps> = ({
               title="晝夜光影與四季氛圍微粒"
             >
               <span className="text-sm">🌤️</span>
-              <span>晝夜與四季</span>
+              <span>晝夜四季</span>
+            </motion.button>
+
+            {/* Myth vs Reality Codex */}
+            <motion.button
+              type="button"
+              id="header-myth-vs-reality-btn"
+              onClick={onOpenMythVsReality}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-200 text-xs font-bold shadow-2xs transition-all cursor-pointer"
+              title="傳說神話 vs 生物演化深度對照"
+            >
+              <span className="text-sm">✨</span>
+              <span>傳說vs現實</span>
             </motion.button>
 
             {/* Crystal Ball Button */}
