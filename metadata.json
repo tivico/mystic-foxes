@@ -1,0 +1,6 @@
+{
+  "name": "奇幻狐狸生態圖鑑",
+  "description": "探索真實與傳說中的超萌狐狸物種，包含生境篩選、生態被動技、趣味冷知識與守護狐性格測驗。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
