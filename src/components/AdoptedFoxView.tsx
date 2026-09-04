@@ -24,6 +24,7 @@ import {
   EvolutionCelebrationModal,
 } from './ActionModals';
 import { ADVENTURE_LOCATIONS } from '../data/petGameData';
+import { calculateCompanionDays } from '../utils/saveManager';
 import {
   Heart,
   Sparkles,
@@ -523,7 +524,17 @@ export const AdoptedFoxView: React.FC<AdoptedFoxViewProps> = ({
                   : '🍼 呆萌幼狐期'}
               </span>
               <span>·</span>
-              <span>已領養 {adoptedFox.adoptedAt}</span>
+              <span
+                title={
+                  !isNaN(Date.parse(adoptedFox.adoptedAt))
+                    ? `認領時間：${new Date(adoptedFox.adoptedAt).toLocaleDateString('zh-TW')}`
+                    : undefined
+                }
+                className="inline-flex items-center gap-1 font-medium text-amber-800 dark:text-amber-300"
+              >
+                <Heart className="w-3 h-3 text-rose-500 fill-rose-500" />
+                已陪伴 {calculateCompanionDays(adoptedFox.adoptedAt)} 天
+              </span>
             </div>
           </div>
         </div>

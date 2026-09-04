@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { FoxSpecies, HabitatType, FoxCategory, GamePlayMode, AdoptedFox, GardenState, FoxSaveData } from './types';
+import { FoxSpecies, HabitatType, FoxCategory, GamePlayMode, AdoptedFox, GardenState, FoxSaveData, QuizTabMode } from './types';
 import { FOX_SPECIES_LIST } from './data/foxesData';
 import { GARDEN_SNACKS, GARDEN_TOYS } from './data/petGameData';
 import { AppSidebar } from './components/AppSidebar';
@@ -9,7 +9,7 @@ import { MobileBottomDock } from './components/MobileBottomDock';
 import { HabitatFilter } from './components/HabitatFilter';
 import { FoxCard } from './components/FoxCard';
 import { FoxModal } from './components/FoxModal';
-import { FoxQuizModal } from './components/FoxQuizModal';
+import { FoxQuizHallModal } from './components/FoxQuizHallModal';
 import { CrystalBallModal } from './components/CrystalBallModal';
 import { Footer } from './components/Footer';
 import { AdoptedFoxView } from './components/AdoptedFoxView';
@@ -111,7 +111,16 @@ export default function App() {
   const [adoptedFox, setAdoptedFox] = useState<AdoptedFox | null>(() => {
     try {
       const saved = localStorage.getItem('adopted_fox_data');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object') {
+          // Normalize legacy "今天" or missing adoptedAt to ISO timestamp
+          if (!parsed.adoptedAt || parsed.adoptedAt === '今天' || isNaN(Date.parse(parsed.adoptedAt))) {
+            parsed.adoptedAt = new Date().toISOString();
+          }
+          return parsed;
+        }
+      }
     } catch {
       // ignore
     }
@@ -127,7 +136,7 @@ export default function App() {
       fluffiness: 75,
       spirit: 40,
       equippedAccessoryId: 'clover-leaf',
-      adoptedAt: '今天',
+      adoptedAt: new Date().toISOString(),
       snapshots: [
         {
           id: 'init-snap-1',
@@ -303,7 +312,7 @@ export default function App() {
       fluffiness: 70,
       spirit: 30,
       equippedAccessoryId: 'none',
-      adoptedAt: new Date().toLocaleDateString('zh-TW'),
+      adoptedAt: new Date().toISOString(),
       snapshots: [],
       adventureLog: [],
     };
@@ -357,7 +366,21 @@ export default function App() {
   // Modals state
   const [activeFox, setActiveFox] = useState<FoxSpecies | null>(null);
   const [isQuizOpen, setIsQuizOpen] = useState(false);
+  const [quizHallInitialTab, setQuizHallInitialTab] = useState<QuizTabMode>('personality');
   const [isCrystalBallOpen, setIsCrystalBallOpen] = useState(false);
+
+  const handleOpenQuiz = (tab: QuizTabMode = 'personality') => {
+    setQuizHallInitialTab(tab);
+    setIsQuizOpen(true);
+  };
+
+  const handleRewardCoins = (amount: number) => {
+    setGardenState((prev) => ({
+      ...prev,
+      coins: prev.coins + amount,
+      lastActiveTimestamp: Date.now(),
+    }));
+  };
 
   // Floating heart particles for quick-pet on cards
   const [floatingHearts, setFloatingHearts] = useState<
@@ -504,7 +527,7 @@ export default function App() {
         onOpenBreathing={() => setIsBreathingOpen(true)}
         onOpenAmbientMixer={() => setIsAmbientMixerOpen(true)}
         onOpenAtmosphere={() => setIsAtmosphereOpen(true)}
-        onOpenQuiz={() => setIsQuizOpen(true)}
+        onOpenQuiz={handleOpenQuiz}
         onOpenCrystalBall={() => setIsCrystalBallOpen(true)}
         onOpenPostcards={() => setIsPostcardsOpen(true)}
         onOpenSaveBackup={() => setIsSaveBackupOpen(true)}
@@ -716,7 +739,7 @@ export default function App() {
 
       {/* Footer */}
       <Footer
-        onOpenQuiz={() => setIsQuizOpen(true)}
+        onOpenQuiz={handleOpenQuiz}
         onOpenCrystalBall={() => setIsCrystalBallOpen(true)}
       />
 
@@ -728,7 +751,7 @@ export default function App() {
         onOpenBreathing={() => setIsBreathingOpen(true)}
         onOpenAmbientMixer={() => setIsAmbientMixerOpen(true)}
         onOpenAtmosphere={() => setIsAtmosphereOpen(true)}
-        onOpenQuiz={() => setIsQuizOpen(true)}
+        onOpenQuiz={handleOpenQuiz}
         onOpenCrystalBall={() => setIsCrystalBallOpen(true)}
         onOpenPostcards={() => setIsPostcardsOpen(true)}
         onOpenSaveBackup={() => setIsSaveBackupOpen(true)}
@@ -798,11 +821,13 @@ export default function App() {
         petCount={activeFox ? petCounts[activeFox.id] || 0 : 0}
       />
 
-      {/* Personality Quiz Modal */}
-      <FoxQuizModal
+      {/* Personality & Trivia & Silhouette Quiz Hall Modal */}
+      <FoxQuizHallModal
         isOpen={isQuizOpen}
         onClose={() => setIsQuizOpen(false)}
         onViewFox={(fox) => setActiveFox(fox)}
+        onRewardCoins={handleRewardCoins}
+        initialTab={quizHallInitialTab}
       />
 
       {/* Magic Crystal Ball Modal */}

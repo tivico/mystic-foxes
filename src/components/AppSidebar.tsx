@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { GamePlayMode, AdoptedFox } from '../types';
 import { FOX_SPECIES_LIST } from '../data/foxesData';
 import { FoxIllustration } from './FoxIllustration';
+import { calculateCompanionDays } from '../utils/saveManager';
 import {
   PawPrint,
   Sparkles,
@@ -34,7 +35,7 @@ interface AppSidebarProps {
   onOpenBreathing: () => void;
   onOpenAmbientMixer: () => void;
   onOpenAtmosphere: () => void;
-  onOpenQuiz: () => void;
+  onOpenQuiz: (tab?: 'personality' | 'trivia' | 'silhouette') => void;
   onOpenCrystalBall: () => void;
   onOpenPostcards: () => void;
   onOpenSaveBackup: () => void;
@@ -171,6 +172,9 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
               <span className="flex items-center gap-0.5 text-amber-600 dark:text-amber-400 font-medium">
                 <Zap size={10} /> {adoptedFox.energy}%
               </span>
+              <span className="text-[10px] text-amber-700 dark:text-amber-400 font-medium ml-auto">
+                陪伴 {calculateCompanionDays(adoptedFox.adoptedAt)} 天
+              </span>
             </div>
           </div>
         </div>
@@ -303,6 +307,28 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
             <button
               type="button"
               onClick={() => {
+                onOpenQuiz('personality');
+                onCloseMobile();
+              }}
+              className={`w-full flex items-center ${
+                isCollapsed ? 'justify-center px-2 py-2' : 'px-3 py-2'
+              } rounded-xl text-stone-700 dark:text-stone-300 hover:bg-rose-50 dark:hover:bg-rose-950/30 hover:text-rose-900 dark:hover:text-rose-200 transition-colors text-xs font-medium cursor-pointer`}
+              title="靈狐試煉考堂（命定測驗、知識挑戰、剪影盲盒）"
+            >
+              <HelpCircle size={16} className="text-rose-500 shrink-0" />
+              {!isCollapsed && (
+                <div className="ml-3 flex-1 flex items-center justify-between">
+                  <span>靈狐試煉考堂</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-amber-500 text-white font-mono font-bold">
+                    3種題庫
+                  </span>
+                </div>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
                 onOpenCrystalBall();
                 onCloseMobile();
               }}
@@ -313,21 +339,6 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
             >
               <Sparkles size={16} className="text-purple-500 shrink-0" />
               {!isCollapsed && <span className="ml-3">冷知識水晶球</span>}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                onOpenQuiz();
-                onCloseMobile();
-              }}
-              className={`w-full flex items-center ${
-                isCollapsed ? 'justify-center px-2 py-2' : 'px-3 py-2'
-              } rounded-xl text-stone-700 dark:text-stone-300 hover:bg-rose-50 dark:hover:bg-rose-950/30 hover:text-rose-900 dark:hover:text-rose-200 transition-colors text-xs font-medium cursor-pointer`}
-              title="心理測驗：測你的命定守護狐"
-            >
-              <HelpCircle size={16} className="text-rose-500 shrink-0" />
-              {!isCollapsed && <span className="ml-3">測守護靈狐</span>}
             </button>
 
             <button

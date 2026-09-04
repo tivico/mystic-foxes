@@ -17,6 +17,7 @@ import {
   exportSaveToFile,
   parseSaveFileContent,
   persistAllStatesToStorage,
+  calculateCompanionDays,
 } from '../utils/saveManager';
 import { playBlessingSound } from '../utils/foxAudio';
 
@@ -189,7 +190,9 @@ export const SaveBackupModal: React.FC<SaveBackupModalProps> = ({
             <div className="p-2.5 rounded-xl bg-white dark:bg-stone-800 border border-stone-200/80 dark:border-stone-700">
               <span className="text-stone-400 text-[10px] block">專屬認領靈狐</span>
               <span className="font-bold text-stone-900 dark:text-stone-100">
-                {adoptedFox ? `${adoptedFox.customName} (Lv.${adoptedFox.level})` : '尚未認領'}
+                {adoptedFox
+                  ? `${adoptedFox.customName} (Lv.${adoptedFox.level} · 陪伴 ${calculateCompanionDays(adoptedFox.adoptedAt)} 天)`
+                  : '尚未認領'}
               </span>
             </div>
             <div className="p-2.5 rounded-xl bg-white dark:bg-stone-800 border border-stone-200/80 dark:border-stone-700">

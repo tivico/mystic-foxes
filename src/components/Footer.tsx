@@ -2,7 +2,7 @@ import React from 'react';
 import { Heart, Sparkles, Compass } from 'lucide-react';
 
 interface FooterProps {
-  onOpenQuiz: () => void;
+  onOpenQuiz: (tab?: 'personality' | 'trivia' | 'silhouette') => void;
   onOpenCrystalBall: () => void;
 }
 

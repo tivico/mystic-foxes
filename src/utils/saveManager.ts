@@ -76,11 +76,24 @@ export function parseSaveFileContent(content: string): FoxSaveData {
     throw new Error('存檔內容缺少靈狐或庭院資料');
   }
 
+  // Sanitize adoptedFox and ensure adoptedAt is a valid ISO timestamp
+  let normalizedAdoptedFox: AdoptedFox | null = null;
+  if (parsed.adoptedFox && typeof parsed.adoptedFox === 'object') {
+    let adoptedAt = parsed.adoptedFox.adoptedAt;
+    if (!adoptedAt || adoptedAt === '今天' || isNaN(Date.parse(adoptedAt))) {
+      adoptedAt = parsed.exportedAt || new Date().toISOString();
+    }
+    normalizedAdoptedFox = {
+      ...parsed.adoptedFox,
+      adoptedAt,
+    };
+  }
+
   return {
     version: parsed.version || 1,
     exportedAt: parsed.exportedAt || new Date().toISOString(),
     gameMode: parsed.gameMode || 'adopt',
-    adoptedFox: parsed.adoptedFox || null,
+    adoptedFox: normalizedAdoptedFox,
     gardenState: {
       placedSnack: parsed.gardenState?.placedSnack ?? null,
       placedToy: parsed.gardenState?.placedToy ?? null,
@@ -147,3 +160,32 @@ export function calculateOfflineEarnings(
     formattedDuration,
   };
 }
+
+/**
+ * Calculate total days accompanied with the adopted fox
+ * Returns 1 on the day of adoption, 2 on the next day, etc.
+ */
+export function calculateCompanionDays(adoptedAt?: string): number {
+  if (!adoptedAt || adoptedAt === '今天') return 1;
+  const parsedTime = Date.parse(adoptedAt);
+  if (isNaN(parsedTime)) return 1;
+
+  const adoptedDate = new Date(parsedTime);
+  const now = new Date();
+
+  // Reset hours/minutes/seconds to compare whole calendar days in local time
+  const startAdopted = new Date(
+    adoptedDate.getFullYear(),
+    adoptedDate.getMonth(),
+    adoptedDate.getDate()
+  ).getTime();
+  const startToday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate()
+  ).getTime();
+
+  const diffDays = Math.floor((startToday - startAdopted) / (1000 * 60 * 60 * 24));
+  return Math.max(1, diffDays + 1);
+}
+

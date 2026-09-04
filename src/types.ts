@@ -78,6 +78,31 @@ export interface QuizQuestion {
   }[];
 }
 
+export type PersonalityQuizQuestion = QuizQuestion;
+
+export type QuizTabMode = 'personality' | 'trivia' | 'silhouette';
+
+export interface TriviaQuestion {
+  id: number;
+  question: string;
+  category: '生態知識' | '神話傳說' | '奇趣習性' | '生理構造';
+  difficulty: '簡單' | '進階' | '達人';
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+  rewardCoins: number;
+}
+
+export interface SilhouetteQuestion {
+  id: number;
+  foxId: string;
+  clues: string[];
+  hint: string;
+  options: string[];
+  correctAnswer: string;
+  rewardCoins: number;
+}
+
 export interface ColdFact {
   id: number;
   foxName: string;

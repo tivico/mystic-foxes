@@ -12,6 +12,7 @@ import {
   HelpCircle,
   Mail,
   Database,
+  Search,
   X,
 } from 'lucide-react';
 
@@ -22,7 +23,7 @@ interface MobileBottomDockProps {
   onOpenBreathing: () => void;
   onOpenAmbientMixer: () => void;
   onOpenAtmosphere: () => void;
-  onOpenQuiz: () => void;
+  onOpenQuiz: (tab?: 'personality' | 'trivia' | 'silhouette') => void;
   onOpenCrystalBall: () => void;
   onOpenPostcards: () => void;
   onOpenSaveBackup: () => void;
@@ -134,97 +135,156 @@ export const MobileBottomDock: React.FC<MobileBottomDockProps> = ({
                 </button>
               </div>
 
-              {/* Tools Grid */}
-              <div className="grid grid-cols-2 gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => {
-                    onOpenBreathing();
-                    setIsToolsOpen(false);
-                  }}
-                  className="flex items-center gap-3 p-3 rounded-2xl bg-teal-50 dark:bg-teal-950/30 border border-teal-200/70 text-left text-teal-950 dark:text-teal-200"
-                >
-                  <Wind size={20} className="text-teal-600" />
-                  <div>
-                    <div className="text-xs font-bold">引導深呼吸</div>
-                    <div className="text-[10px] text-teal-700 dark:text-teal-400">箱式冥想練習</div>
-                  </div>
-                </button>
+              {/* Group 1: 靈狐試煉考堂 (New & Highlighted) */}
+              <div className="space-y-2">
+                <div className="text-[11px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider">
+                  ⛩️ 靈狐試煉考堂（3種趣味題庫）
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onOpenQuiz('personality');
+                      setIsToolsOpen(false);
+                    }}
+                    className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 text-center"
+                  >
+                    <Sparkles size={18} className="text-amber-600 mb-1" />
+                    <span className="text-[11px] font-bold text-stone-800 dark:text-stone-200">
+                      命定守護狐
+                    </span>
+                    <span className="text-[9px] text-amber-700 dark:text-amber-400">心靈特質</span>
+                  </button>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    onOpenAmbientMixer();
-                    setIsToolsOpen(false);
-                  }}
-                  className="flex items-center gap-3 p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200/70 text-left text-amber-950 dark:text-amber-200"
-                >
-                  <Music size={20} className="text-amber-600" />
-                  <div>
-                    <div className="text-xs font-bold">林間白噪音</div>
-                    <div className="text-[10px] text-amber-700 dark:text-amber-400">環境白噪音混音</div>
-                  </div>
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onOpenQuiz('trivia');
+                      setIsToolsOpen(false);
+                    }}
+                    className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-orange-50 dark:bg-orange-950/40 border border-orange-200/80 text-center"
+                  >
+                    <HelpCircle size={18} className="text-orange-600 mb-1" />
+                    <span className="text-[11px] font-bold text-stone-800 dark:text-stone-200">
+                      生態知識
+                    </span>
+                    <span className="text-[9px] text-orange-700 dark:text-orange-400">答對賺幣</span>
+                  </button>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    onOpenAtmosphere();
-                    setIsToolsOpen(false);
-                  }}
-                  className="flex items-center gap-3 p-3 rounded-2xl bg-orange-50 dark:bg-orange-950/30 border border-orange-200/70 text-left text-orange-950 dark:text-orange-200"
-                >
-                  <SunMedium size={20} className="text-orange-600" />
-                  <div>
-                    <div className="text-xs font-bold">晝夜四季光影</div>
-                    <div className="text-[10px] text-orange-700 dark:text-orange-400">微粒與色溫切換</div>
-                  </div>
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onOpenQuiz('silhouette');
+                      setIsToolsOpen(false);
+                    }}
+                    className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200/80 text-center"
+                  >
+                    <Search size={18} className="text-purple-600 mb-1" />
+                    <span className="text-[11px] font-bold text-stone-800 dark:text-stone-200">
+                      剪影盲盒
+                    </span>
+                    <span className="text-[9px] text-purple-700 dark:text-purple-400">看線索猜</span>
+                  </button>
+                </div>
+              </div>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    onOpenCrystalBall();
-                    setIsToolsOpen(false);
-                  }}
-                  className="flex items-center gap-3 p-3 rounded-2xl bg-purple-50 dark:bg-purple-950/30 border border-purple-200/70 text-left text-purple-950 dark:text-purple-200"
-                >
-                  <Sparkles size={20} className="text-purple-600" />
-                  <div>
-                    <div className="text-xs font-bold">冷知識水晶球</div>
-                    <div className="text-[10px] text-purple-700 dark:text-purple-400">每日靈狐小知識</div>
-                  </div>
-                </button>
+              {/* Group 2: 心靈舒緩 */}
+              <div className="space-y-2">
+                <div className="text-[11px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider">
+                  🌿 心靈舒緩冥想
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onOpenBreathing();
+                      setIsToolsOpen(false);
+                    }}
+                    className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200/80 text-center"
+                  >
+                    <Wind size={18} className="text-teal-600 mb-1" />
+                    <span className="text-[11px] font-bold text-stone-800 dark:text-stone-200">
+                      深呼吸
+                    </span>
+                    <span className="text-[9px] text-teal-700 dark:text-teal-400">放鬆練習</span>
+                  </button>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    onOpenQuiz();
-                    setIsToolsOpen(false);
-                  }}
-                  className="flex items-center gap-3 p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200/70 text-left text-rose-950 dark:text-rose-200"
-                >
-                  <HelpCircle size={20} className="text-rose-600" />
-                  <div>
-                    <div className="text-xs font-bold">測守護靈狐</div>
-                    <div className="text-[10px] text-rose-700 dark:text-rose-400">命定靈魂伴侶</div>
-                  </div>
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onOpenAmbientMixer();
+                      setIsToolsOpen(false);
+                    }}
+                    className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 text-center"
+                  >
+                    <Music size={18} className="text-amber-600 mb-1" />
+                    <span className="text-[11px] font-bold text-stone-800 dark:text-stone-200">
+                      白噪音
+                    </span>
+                    <span className="text-[9px] text-amber-700 dark:text-amber-400">環境混音</span>
+                  </button>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    onOpenPostcards();
-                    setIsToolsOpen(false);
-                  }}
-                  className="flex items-center gap-3 p-3 rounded-2xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200/70 text-left text-blue-950 dark:text-blue-200"
-                >
-                  <Mail size={20} className="text-blue-600" />
-                  <div>
-                    <div className="text-xs font-bold">時空明信片</div>
-                    <div className="text-[10px] text-blue-700 dark:text-blue-400">狐狸旅行來信</div>
-                  </div>
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onOpenAtmosphere();
+                      setIsToolsOpen(false);
+                    }}
+                    className="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-orange-50 dark:bg-orange-950/40 border border-orange-200/80 text-center"
+                  >
+                    <SunMedium size={18} className="text-orange-600 mb-1" />
+                    <span className="text-[11px] font-bold text-stone-800 dark:text-stone-200">
+                      四季光影
+                    </span>
+                    <span className="text-[9px] text-orange-700 dark:text-orange-400">晝夜氛圍</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Group 3: 奇遇探索 */}
+              <div className="space-y-2">
+                <div className="text-[11px] font-bold text-stone-400 dark:text-stone-500 uppercase tracking-wider">
+                  📮 奇遇探索
+                </div>
+                <div className="grid grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onOpenCrystalBall();
+                      setIsToolsOpen(false);
+                    }}
+                    className="flex items-center gap-2.5 p-3 rounded-2xl bg-purple-50 dark:bg-purple-950/30 border border-purple-200/70 text-left"
+                  >
+                    <Sparkles size={18} className="text-purple-600 shrink-0" />
+                    <div>
+                      <div className="text-xs font-bold text-stone-900 dark:text-stone-100">
+                        冷知識水晶球
+                      </div>
+                      <div className="text-[10px] text-purple-700 dark:text-purple-400">
+                        每日靈狐小知識
+                      </div>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onOpenPostcards();
+                      setIsToolsOpen(false);
+                    }}
+                    className="flex items-center gap-2.5 p-3 rounded-2xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200/70 text-left"
+                  >
+                    <Mail size={18} className="text-blue-600 shrink-0" />
+                    <div>
+                      <div className="text-xs font-bold text-stone-900 dark:text-stone-100">
+                        時空明信片
+                      </div>
+                      <div className="text-[10px] text-blue-700 dark:text-blue-400">
+                        狐狸旅行來信
+                      </div>
+                    </div>
+                  </button>
+                </div>
               </div>
 
               {/* Save & Backup Full Button */}
