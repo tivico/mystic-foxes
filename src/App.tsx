@@ -3,14 +3,15 @@ import { motion, AnimatePresence } from 'motion/react';
 import { FoxSpecies, HabitatType, FoxCategory, GamePlayMode, AdoptedFox, GardenState, FoxSaveData } from './types';
 import { FOX_SPECIES_LIST } from './data/foxesData';
 import { GARDEN_SNACKS, GARDEN_TOYS } from './data/petGameData';
-import { Header } from './components/Header';
+import { AppSidebar } from './components/AppSidebar';
+import { AppTopBar } from './components/AppTopBar';
+import { MobileBottomDock } from './components/MobileBottomDock';
 import { HabitatFilter } from './components/HabitatFilter';
 import { FoxCard } from './components/FoxCard';
 import { FoxModal } from './components/FoxModal';
 import { FoxQuizModal } from './components/FoxQuizModal';
 import { CrystalBallModal } from './components/CrystalBallModal';
 import { Footer } from './components/Footer';
-import { GameModeNav } from './components/GameModeNav';
 import { AdoptedFoxView } from './components/AdoptedFoxView';
 import { CourtyardGardenView } from './components/CourtyardGardenView';
 import { AmbientSoundMixer } from './components/AmbientSoundMixer';
@@ -177,6 +178,10 @@ export default function App() {
 
   // Mode switching transition state (to prevent 1-3s blank screen)
   const [isSwitchingMode, setIsSwitchingMode] = useState(false);
+
+  // Modern Sidebar state
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Save & Backup modal state
   const [isSaveBackupOpen, setIsSaveBackupOpen] = useState(false);
@@ -451,7 +456,7 @@ export default function App() {
 
   return (
     <div
-      className={`min-h-screen flex flex-col font-sans transition-colors duration-1000 relative ${atmoContainerClasses} ${
+      className={`h-screen w-full flex font-sans transition-colors duration-1000 relative overflow-hidden ${atmoContainerClasses} ${
         timeOfDay === 'night' ? 'dark' : ''
       }`}
     >
@@ -485,35 +490,46 @@ export default function App() {
         </AnimatePresence>
       </div>
 
-      {/* Main Header */}
-      <Header
+      {/* Modern Japanese Collapsible Sidebar (Desktop & Drawer on Mobile) */}
+      <AppSidebar
+        currentMode={gameMode}
+        onSelectMode={handleSelectGameMode}
+        adoptedFox={adoptedFox}
+        visitorCount={gardenState.visitors.length}
+        speciesCount={FOX_SPECIES_LIST.length}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        isOpenMobile={isMobileSidebarOpen}
+        onCloseMobile={() => setIsMobileSidebarOpen(false)}
+        onOpenBreathing={() => setIsBreathingOpen(true)}
+        onOpenAmbientMixer={() => setIsAmbientMixerOpen(true)}
+        onOpenAtmosphere={() => setIsAtmosphereOpen(true)}
         onOpenQuiz={() => setIsQuizOpen(true)}
         onOpenCrystalBall={() => setIsCrystalBallOpen(true)}
-        onOpenAmbientMixer={() => setIsAmbientMixerOpen(true)}
         onOpenPostcards={() => setIsPostcardsOpen(true)}
-        onOpenBreathing={() => setIsBreathingOpen(true)}
-        onOpenAtmosphere={() => setIsAtmosphereOpen(true)}
-        onOpenMythVsReality={() => handleSelectGameMode('myth-vs-reality')}
         onOpenSaveBackup={() => setIsSaveBackupOpen(true)}
-        totalPetCount={totalPetCount}
       />
 
-      {/* Mode Selector Navigation */}
-      <div className="mt-4 z-20">
-        <GameModeNav
+      {/* Right Canvas / Main Stage Area */}
+      <div className="flex-1 flex flex-col h-full min-w-0 overflow-y-auto relative">
+        {/* Streamlined Clean Top Status Bar */}
+        <AppTopBar
           currentMode={gameMode}
-          onSelectMode={handleSelectGameMode}
-          adoptedFoxName={adoptedFox?.customName}
-          visitorCount={gardenState.visitors.length}
+          coins={gardenState.coins}
+          totalPetCount={totalPetCount}
+          timeOfDay={timeOfDay}
+          season={season}
+          onOpenMobileMenu={() => setIsMobileSidebarOpen(true)}
+          onOpenAtmosphere={() => setIsAtmosphereOpen(true)}
+          onOpenSaveBackup={() => setIsSaveBackupOpen(true)}
         />
-      </div>
 
-      {/* Main Container */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6 z-20">
-        {isSwitchingMode ? (
-          <FoxLoadingScreen message="小狐狸正輕快奔馳前往新模式..." />
-        ) : (
-          <AnimatePresence>
+        {/* Main Container */}
+        <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 pb-28 lg:pb-12 z-20">
+          {isSwitchingMode ? (
+            <FoxLoadingScreen message="小狐狸正輕快奔馳前往新模式..." />
+          ) : (
+            <AnimatePresence>
             {/* 1. 認領一隻專屬養成模式 */}
             {gameMode === 'adopt' && (
               <motion.div
@@ -703,6 +719,21 @@ export default function App() {
         onOpenQuiz={() => setIsQuizOpen(true)}
         onOpenCrystalBall={() => setIsCrystalBallOpen(true)}
       />
+
+      {/* Mobile Bottom Floating Dock */}
+      <MobileBottomDock
+        currentMode={gameMode}
+        onSelectMode={handleSelectGameMode}
+        visitorCount={gardenState.visitors.length}
+        onOpenBreathing={() => setIsBreathingOpen(true)}
+        onOpenAmbientMixer={() => setIsAmbientMixerOpen(true)}
+        onOpenAtmosphere={() => setIsAtmosphereOpen(true)}
+        onOpenQuiz={() => setIsQuizOpen(true)}
+        onOpenCrystalBall={() => setIsCrystalBallOpen(true)}
+        onOpenPostcards={() => setIsPostcardsOpen(true)}
+        onOpenSaveBackup={() => setIsSaveBackupOpen(true)}
+      />
+    </div>
 
       {/* Ambient Sound Mixer Modal */}
       <AmbientSoundMixer

@@ -621,3 +621,25 @@ export function playCameraSound(): void {
   whir.start(now + 0.08);
   whir.stop(now + 0.28);
 }
+
+/** 11. 神社御守微風風鈴輕響聲 (Wind Chime Sound) */
+export function playWindChimeSound(): void {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  const chimeFreqs = [1760, 2093, 2349, 2793, 3136];
+  chimeFreqs.forEach((freq, idx) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    const delay = idx * 0.08 + Math.random() * 0.03;
+    osc.frequency.setValueAtTime(freq, now + delay);
+    gain.gain.setValueAtTime(0.08, now + delay);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + delay + 1.2);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now + delay);
+    osc.stop(now + delay + 1.25);
+  });
+}
+
