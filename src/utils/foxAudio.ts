@@ -213,3 +213,240 @@ export function playPettingSound(foxId: string): void {
     }
   }
 }
+
+/** 2. 餵食咀嚼與歡快吞嚥音 */
+export function playFeedSound(): void {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+
+  // Munch crunch 1
+  [0, 0.09, 0.18].forEach((offset, idx) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(450 + idx * 80, now + offset);
+    osc.frequency.exponentialRampToValueAtTime(200, now + offset + 0.06);
+    gain.gain.setValueAtTime(0.16, now + offset);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.07);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now + offset);
+    osc.stop(now + offset + 0.08);
+  });
+
+  // Gulp / happy chime
+  const gulp = ctx.createOscillator();
+  const gulpGain = ctx.createGain();
+  gulp.type = 'sine';
+  gulp.frequency.setValueAtTime(320, now + 0.28);
+  gulp.frequency.exponentialRampToValueAtTime(580, now + 0.38);
+  gulpGain.gain.setValueAtTime(0.14, now + 0.28);
+  gulpGain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+  gulp.connect(gulpGain);
+  gulpGain.connect(ctx.destination);
+  gulp.start(now + 0.28);
+  gulp.stop(now + 0.46);
+}
+
+/** 3. 輕柔梳毛柔和風聲與蓬鬆閃光音 */
+export function playBrushSound(): void {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+
+  [880, 1174.66, 1318.51].forEach((freq, idx) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+    gain.gain.setValueAtTime(0.1, now + idx * 0.08);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.08 + 0.35);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now + idx * 0.08);
+    osc.stop(now + idx * 0.08 + 0.38);
+  });
+}
+
+/** 4. 丟球逗狐撲跳彈跳聲 */
+export function playToySound(): void {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+
+  // Squeak
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(980, now);
+  osc.frequency.exponentialRampToValueAtTime(1480, now + 0.08);
+  osc.frequency.exponentialRampToValueAtTime(1100, now + 0.16);
+  gain.gain.setValueAtTime(0.1, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(now);
+  osc.stop(now + 0.19);
+
+  // Bounce Boing
+  const boing = ctx.createOscillator();
+  const boingGain = ctx.createGain();
+  boing.type = 'sine';
+  boing.frequency.setValueAtTime(320, now + 0.14);
+  boing.frequency.exponentialRampToValueAtTime(680, now + 0.26);
+  boingGain.gain.setValueAtTime(0.15, now + 0.14);
+  boingGain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+  boing.connect(boingGain);
+  boingGain.connect(ctx.destination);
+  boing.start(now + 0.14);
+  boing.stop(now + 0.4);
+}
+
+/** 5. 溫泉泡湯水泡與療癒水花音 */
+export function playBathSound(): void {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+
+  [520, 680, 840, 600].forEach((freq, idx) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, now + idx * 0.09);
+    osc.frequency.exponentialRampToValueAtTime(freq * 1.3, now + idx * 0.09 + 0.08);
+    gain.gain.setValueAtTime(0.1, now + idx * 0.09);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.09 + 0.18);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now + idx * 0.09);
+    osc.stop(now + idx * 0.09 + 0.2);
+  });
+}
+
+/** 6. 八音盒安睡搖籃曲 */
+export function playLullabySound(): void {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+
+  const notes = [659.25, 587.33, 523.25, 659.25, 783.99]; // E5, D5, C5, E5, G5
+  notes.forEach((freq, idx) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(freq, now + idx * 0.22);
+    gain.gain.setValueAtTime(0.12, now + idx * 0.22);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.22 + 0.6);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now + idx * 0.22);
+    osc.stop(now + idx * 0.22 + 0.65);
+  });
+}
+
+/** 7. 後山探險發現寶物凱旋音 */
+export function playAdventureFanfare(): void {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+
+  const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+  notes.forEach((freq, idx) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, now + idx * 0.1);
+    gain.gain.setValueAtTime(0.14, now + idx * 0.1);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + (idx === 3 ? 0.6 : 0.25));
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now + idx * 0.1);
+    osc.stop(now + idx * 0.1 + (idx === 3 ? 0.65 : 0.28));
+  });
+}
+
+/** 8. 神社靈力祈福仙靈鐘磬和弦 */
+export function playBlessingSound(): void {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+
+  // Deep bell
+  const bell = ctx.createOscillator();
+  const bellGain = ctx.createGain();
+  bell.type = 'sine';
+  bell.frequency.setValueAtTime(220, now);
+  bellGain.gain.setValueAtTime(0.25, now);
+  bellGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
+  bell.connect(bellGain);
+  bellGain.connect(ctx.destination);
+  bell.start(now);
+  bell.stop(now + 1.25);
+
+  // Mystic harmonics
+  [440, 659.25, 880, 1318.51].forEach((freq, idx) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+    gain.gain.setValueAtTime(0.1, now + idx * 0.08);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.08 + 0.9);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now + idx * 0.08);
+    osc.stop(now + idx * 0.08 + 0.95);
+  });
+}
+
+/** 9. 換裝打扮布料與魔力閃亮音 */
+export function playDressSound(): void {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+
+  [783.99, 987.77, 1174.66, 1567.98].forEach((freq, idx) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(freq, now + idx * 0.07);
+    gain.gain.setValueAtTime(0.12, now + idx * 0.07);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.3);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now + idx * 0.07);
+    osc.stop(now + idx * 0.07 + 0.32);
+  });
+}
+
+/** 10. 拍立得快門咔嚓聲 */
+export function playCameraSound(): void {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+
+  // Shutter click 1
+  const click1 = ctx.createOscillator();
+  const clickGain1 = ctx.createGain();
+  click1.type = 'square';
+  click1.frequency.setValueAtTime(1200, now);
+  clickGain1.gain.setValueAtTime(0.15, now);
+  clickGain1.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+  click1.connect(clickGain1);
+  clickGain1.connect(ctx.destination);
+  click1.start(now);
+  click1.stop(now + 0.04);
+
+  // Mechanical Whir / flash
+  const whir = ctx.createOscillator();
+  const whirGain = ctx.createGain();
+  whir.type = 'triangle';
+  whir.frequency.setValueAtTime(400, now + 0.08);
+  whir.frequency.linearRampToValueAtTime(700, now + 0.22);
+  whirGain.gain.setValueAtTime(0.1, now + 0.08);
+  whirGain.gain.exponentialRampToValueAtTime(0.001, now + 0.26);
+  whir.connect(whirGain);
+  whirGain.connect(ctx.destination);
+  whir.start(now + 0.08);
+  whir.stop(now + 0.28);
+}

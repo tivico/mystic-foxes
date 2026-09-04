@@ -64,3 +64,90 @@ export interface ColdFact {
   category: string;
   tagEmoji: string;
 }
+
+// 10 Interactive Action Types
+export type PetActionType =
+  | 'pat'        // 1. 摸摸揉臉
+  | 'feed'       // 2. 美食投餵
+  | 'brush'      // 3. 輕柔梳毛
+  | 'play'       // 4. 丟球逗狐
+  | 'bath'       // 5. 溫泉沐浴
+  | 'sleep'      // 6. 搖籃安睡
+  | 'adventure'  // 7. 後山探險
+  | 'blessing'   // 8. 靈力祈福
+  | 'dress'      // 9. 飾品裝扮
+  | 'snapshot';  // 10. 拍立得手帳
+
+export type FoxEvolutionStage = 'baby' | 'adult' | 'mystic';
+
+export interface FoxAccessory {
+  id: string;
+  name: string;
+  icon: string;
+  category: 'head' | 'neck' | 'aura';
+  description: string;
+}
+
+export interface AdoptedFox {
+  speciesId: string;
+  customName: string;
+  adoptedAt: string;
+  level: number;
+  exp: number;
+  stage: FoxEvolutionStage;
+  hunger: number;     // 0 - 100
+  happiness: number;  // 0 - 100
+  energy: number;     // 0 - 100
+  spirit: number;     // 0 - 100 (Spiritual Power)
+  fluffiness: number; // 0 - 100
+  equippedAccessoryId?: string;
+  adventureLog: {
+    id: string;
+    date: string;
+    location: string;
+    itemFound: string;
+    story: string;
+  }[];
+  snapshots: {
+    id: string;
+    date: string;
+    title: string;
+    note: string;
+    stage: FoxEvolutionStage;
+  }[];
+}
+
+// Courtyard Garden Placeable items
+export interface GardenSnackItem {
+  id: string;
+  name: string;
+  emoji: string;
+  attractionBonus: string;
+  desc: string;
+}
+
+export interface GardenToyItem {
+  id: string;
+  name: string;
+  emoji: string;
+  desc: string;
+}
+
+export type GamePlayMode = 'adopt' | 'idle' | 'encyclopedia';
+
+export interface GardenVisitor {
+  id: string;
+  speciesId: string;
+  activity: string;
+  visitedAt: string;
+  satisfaction: number;
+  giftGiven?: boolean;
+}
+
+export interface GardenState {
+  placedSnack: GardenSnackItem | null;
+  placedToy: GardenToyItem | null;
+  visitors: GardenVisitor[];
+  coins: number;
+  unlockedFoxIds: string[];
+}

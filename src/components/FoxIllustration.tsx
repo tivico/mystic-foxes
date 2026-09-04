@@ -13,6 +13,9 @@ interface FoxIllustrationProps {
   foxId: string;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   isPetting?: boolean;
+  stage?: 'baby' | 'adult' | 'mystic';
+  accessoryId?: string;
+  activity?: 'idle' | 'sleeping' | 'eating' | 'bathing' | 'playing' | 'brushing';
 }
 
 const FOX_IMAGE_MAP: Record<
@@ -90,6 +93,9 @@ export const FoxIllustration: React.FC<FoxIllustrationProps> = ({
   foxId,
   size = 'md',
   isPetting = false,
+  stage = 'adult',
+  accessoryId = 'none',
+  activity = 'idle',
 }) => {
   const foxData = FOX_IMAGE_MAP[foxId] || FOX_IMAGE_MAP['red-fox'];
 
@@ -107,34 +113,69 @@ export const FoxIllustration: React.FC<FoxIllustrationProps> = ({
     xl: 'rounded-3xl',
   };
 
+  // Accessory Icons map
+  const ACCESSORY_ICON_MAP: Record<string, { icon: string; pos: string; label: string }> = {
+    'shrine-ribbon': { icon: '⛩️', pos: '-bottom-2 -left-2', label: '稻荷朱砂結' },
+    'sakura-crown': { icon: '🌸', pos: '-top-3 left-1/2 -translate-x-1/2', label: '春櫻冠' },
+    'clover-leaf': { icon: '🍀', pos: '-top-3 right-4', label: '四葉草' },
+    'round-glasses': { icon: '👓', pos: 'top-1/3 left-1/2 -translate-x-1/2', label: '學者鏡' },
+    'explorer-cape': { icon: '🧭', pos: '-bottom-2 -left-1', label: '冒險斗篷' },
+    'celestial-aura': { icon: '💫', pos: '-top-4 left-1/2 -translate-x-1/2', label: '星宿神環' },
+  };
+
+  const activeAcc = accessoryId && accessoryId !== 'none' ? ACCESSORY_ICON_MAP[accessoryId] : null;
+
+  // Animation variants depending on activity & stage
+  let motionAnimate: Record<string, unknown> = { y: [0, -5, 0] };
+  let motionTransition: Record<string, unknown> = { duration: 3.8, repeat: Infinity, ease: 'easeInOut' };
+
+  if (isPetting) {
+    motionAnimate = {
+      scale: [1, 1.15, 0.94, 1.08, 1],
+      rotate: [0, -3, 3, -1.5, 0],
+    };
+    motionTransition = { duration: 0.65, ease: 'easeOut' };
+  } else if (activity === 'sleeping') {
+    motionAnimate = { scale: [1, 0.96, 1], y: [0, 4, 0] };
+    motionTransition = { duration: 2.8, repeat: Infinity, ease: 'easeInOut' };
+  } else if (activity === 'eating') {
+    motionAnimate = { scale: [1, 1.06, 0.98, 1.05, 1], y: [0, -4, 0, -2, 0] };
+    motionTransition = { duration: 0.5, repeat: 3, ease: 'easeInOut' };
+  } else if (activity === 'playing') {
+    motionAnimate = { y: [0, -22, 0, -12, 0], rotate: [0, -6, 6, -3, 0] };
+    motionTransition = { duration: 1.2, repeat: 2, ease: 'easeInOut' };
+  } else if (activity === 'bathing') {
+    motionAnimate = { y: [0, 2, -2, 0], rotate: [0, -1, 1, 0] };
+    motionTransition = { duration: 1.8, repeat: Infinity, ease: 'easeInOut' };
+  }
+
+  // Stage scaling
+  const stageScale = stage === 'baby' ? 'scale-90' : stage === 'mystic' ? 'scale-105' : 'scale-100';
+
   return (
     <motion.div
-      className={`relative inline-flex items-center justify-center select-none ${sizeContainerMap[size]}`}
-      animate={
-        isPetting
-          ? {
-              scale: [1, 1.15, 0.94, 1.08, 1],
-              rotate: [0, -3, 3, -1.5, 0],
-            }
-          : {
-              y: [0, -5, 0],
-            }
-      }
-      transition={
-        isPetting
-          ? { duration: 0.65, ease: 'easeOut' }
-          : { duration: 3.8, repeat: Infinity, ease: 'easeInOut' }
-      }
+      className={`relative inline-flex items-center justify-center select-none ${sizeContainerMap[size]} ${stageScale} transition-transform`}
+      animate={motionAnimate}
+      transition={motionTransition}
       whileHover={{ scale: 1.05 }}
     >
+      {/* Mystic Stage Cosmic Halo / Radiance */}
+      {stage === 'mystic' && (
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 16, repeat: Infinity, ease: 'linear' }}
+          className="absolute -inset-5 rounded-full border-2 border-dashed border-amber-300/60 pointer-events-none"
+        />
+      )}
+
       {/* Outer Glow & Soft Aura */}
       <motion.div
         className={`absolute -inset-2 ${roundedClassMap[size]} bg-gradient-to-tr from-amber-300/30 via-orange-300/20 to-purple-300/30 blur-lg pointer-events-none`}
         animate={
-          foxData.isMythical
+          stage === 'mystic' || foxData.isMythical
             ? {
-                scale: [1, 1.1, 1],
-                opacity: [0.5, 0.85, 0.5],
+                scale: [1, 1.18, 1],
+                opacity: [0.65, 0.95, 0.65],
               }
             : {
                 opacity: [0.4, 0.65, 0.4],
@@ -145,7 +186,13 @@ export const FoxIllustration: React.FC<FoxIllustrationProps> = ({
 
       {/* Main Image Frame */}
       <div
-        className={`relative w-full h-full ${roundedClassMap[size]} overflow-hidden ring-4 ${foxData.ringColor} shadow-lg ${foxData.shadowColor} bg-white transition-all`}
+        className={`relative w-full h-full ${roundedClassMap[size]} overflow-hidden ring-4 ${
+          stage === 'mystic'
+            ? 'ring-amber-400 shadow-amber-400/40 shadow-xl'
+            : stage === 'baby'
+            ? 'ring-pink-300 shadow-pink-300/30'
+            : `${foxData.ringColor} ${foxData.shadowColor}`
+        } shadow-lg bg-white transition-all`}
       >
         <motion.img
           src={foxData.src}
@@ -156,14 +203,49 @@ export const FoxIllustration: React.FC<FoxIllustrationProps> = ({
           transition={{ duration: 0.45 }}
         />
 
+        {/* Baby blush cheeks overlay */}
+        {stage === 'baby' && (
+          <div className="absolute inset-0 pointer-events-none flex items-center justify-between px-6 opacity-60">
+            <span className="w-5 h-2.5 rounded-full bg-pink-400/50 blur-xs" />
+            <span className="w-5 h-2.5 rounded-full bg-pink-400/50 blur-xs" />
+          </div>
+        )}
+
         {/* Soft Glass Corner Sheen */}
         <div className="absolute inset-0 bg-gradient-to-tr from-black/5 via-transparent to-white/25 pointer-events-none" />
       </div>
 
-      {/* Tiny species emoji badge on corner with subtle hover wiggle */}
+      {/* Equipped Accessory Overlay */}
+      {activeAcc && (
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          className={`absolute ${activeAcc.pos} z-20 text-2xl drop-shadow-md select-none pointer-events-none`}
+          title={activeAcc.label}
+        >
+          {activeAcc.icon}
+        </motion.div>
+      )}
+
+      {/* Stage Badge on Top Left */}
+      {size !== 'sm' && stage && (
+        <span
+          className={`absolute -top-1.5 -left-1.5 text-[10px] font-black px-2 py-0.5 rounded-full shadow-md z-20 ${
+            stage === 'mystic'
+              ? 'bg-gradient-to-r from-amber-500 to-yellow-400 text-stone-950 border border-yellow-200'
+              : stage === 'baby'
+              ? 'bg-pink-100 text-pink-700 border border-pink-200'
+              : 'bg-stone-100 text-stone-700 border border-stone-200'
+          }`}
+        >
+          {stage === 'mystic' ? '✨ 仙靈覺醒' : stage === 'baby' ? '🍼 幼狐萌寶' : '🦊 成年靈狐'}
+        </span>
+      )}
+
+      {/* Tiny species emoji badge on bottom right corner */}
       {size !== 'sm' && (
         <motion.span
-          className="absolute -bottom-1 -right-1 text-base sm:text-lg bg-white/95 rounded-full p-1 shadow-md border border-stone-200/80 leading-none cursor-default"
+          className="absolute -bottom-1 -right-1 text-base sm:text-lg bg-white/95 rounded-full p-1 shadow-md border border-stone-200/80 leading-none cursor-default z-10"
           whileHover={{ scale: 1.25, rotate: [0, -10, 10, 0] }}
           transition={{ duration: 0.3 }}
         >
@@ -173,3 +255,4 @@ export const FoxIllustration: React.FC<FoxIllustrationProps> = ({
     </motion.div>
   );
 };
+
