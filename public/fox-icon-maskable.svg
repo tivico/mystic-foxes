@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGradMask" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fffbeb" />
+      <stop offset="50%" stop-color="#fef3c7" />
+      <stop offset="100%" stop-color="#fed7aa" />
+    </linearGradient>
+    <linearGradient id="foxFurMask" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f97316" />
+      <stop offset="100%" stop-color="#ea580c" />
+    </linearGradient>
+  </defs>
+
+  <!-- Full-bleed background for maskable icon -->
+  <rect width="512" height="512" fill="url(#bgGradMask)" />
+
+  <!-- Centered Scaled Content in Safe Zone (80%) -->
+  <g transform="translate(51.2, 51.2) scale(0.8)">
+    <circle cx="256" cy="256" r="190" fill="#ffffff" opacity="0.6" />
+
+    <!-- Ears Outer -->
+    <path d="M140 240 L160 110 L250 200 Z" fill="#c2410c" />
+    <path d="M372 240 L352 110 L262 200 Z" fill="#c2410c" />
+
+    <!-- Ears Inner -->
+    <path d="M155 220 L170 135 L235 195 Z" fill="#ffedd5" />
+    <path d="M357 220 L342 135 L277 195 Z" fill="#ffedd5" />
+
+    <!-- Main Fox Face Base -->
+    <path d="M120 240 C120 180, 392 180, 392 240 C392 340, 310 390, 256 390 C202 390, 120 340, 120 240 Z" fill="url(#foxFurMask)" />
+
+    <!-- White Cheeks -->
+    <path d="M120 250 C140 330, 210 375, 256 375 C210 330, 180 270, 180 240 Z" fill="#ffffff" />
+    <path d="M392 250 C372 330, 302 375, 256 375 C302 330, 332 270, 332 240 Z" fill="#ffffff" />
+
+    <!-- Forehead Star Mark -->
+    <path d="M256 195 L260 208 L273 212 L260 216 L256 229 L252 216 L239 212 L252 208 Z" fill="#fef08a" />
+
+    <!-- Cute Eyes -->
+    <path d="M185 260 Q205 245 225 260" stroke="#431407" stroke-width="8" stroke-linecap="round" fill="none" />
+    <path d="M287 260 Q307 245 327 260" stroke="#431407" stroke-width="8" stroke-linecap="round" fill="none" />
+
+    <!-- Blushing Cheeks -->
+    <ellipse cx="170" cy="285" rx="16" ry="10" fill="#f43f5e" opacity="0.45" />
+    <ellipse cx="342" cy="285" rx="16" ry="10" fill="#f43f5e" opacity="0.45" />
+
+    <!-- Fox Nose -->
+    <ellipse cx="256" cy="315" rx="12" ry="9" fill="#292524" />
+
+    <!-- Fox Smile -->
+    <path d="M246 324 Q256 332 266 324" stroke="#292524" stroke-width="4" stroke-linecap="round" fill="none" />
+  </g>
+</svg>

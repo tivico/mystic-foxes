@@ -13,8 +13,30 @@ import { Footer } from './components/Footer';
 import { GameModeNav } from './components/GameModeNav';
 import { AdoptedFoxView } from './components/AdoptedFoxView';
 import { CourtyardGardenView } from './components/CourtyardGardenView';
+import { AmbientSoundMixer } from './components/AmbientSoundMixer';
+import { FoxPostcardAdventure } from './components/FoxPostcardAdventure';
+import { FoxBreathingGuide } from './components/FoxBreathingGuide';
+import { AtmosphereController } from './components/AtmosphereController';
+import { SeasonParticlesCanvas, SeasonType, TimeOfDay } from './components/SeasonParticlesCanvas';
+import { PwaInstallPrompt } from './components/PwaInstallPrompt';
 import { playPettingSound } from './utils/foxAudio';
 import { Sparkles, RotateCcw } from 'lucide-react';
+
+// Time helpers for zero-backend atmosphere detection
+const getAutoTimeOfDay = (): TimeOfDay => {
+  const hour = new Date().getHours();
+  if (hour >= 6 && hour < 17) return 'day';
+  if (hour >= 17 && hour < 19) return 'sunset';
+  return 'night';
+};
+
+const getAutoSeason = (): SeasonType => {
+  const month = new Date().getMonth() + 1; // 1 - 12
+  if (month >= 3 && month <= 5) return 'spring';
+  if (month >= 6 && month <= 8) return 'summer';
+  if (month >= 9 && month <= 11) return 'autumn';
+  return 'winter';
+};
 
 export default function App() {
   // Current game mode: 'adopt' (認領一隻) | 'idle' (放置養成) | 'encyclopedia' (圖鑑全覽)
@@ -27,6 +49,54 @@ export default function App() {
     }
   });
 
+  // Atmosphere & Lighting state
+  const [autoSyncAtmosphere, setAutoSyncAtmosphere] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('fox_auto_sync_atmo');
+      return saved !== null ? JSON.parse(saved) : true;
+    } catch {
+      return true;
+    }
+  });
+
+  const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>(() => {
+    try {
+      const saved = localStorage.getItem('fox_time_of_day');
+      return (saved as TimeOfDay) || getAutoTimeOfDay();
+    } catch {
+      return getAutoTimeOfDay();
+    }
+  });
+
+  const [season, setSeason] = useState<SeasonType>(() => {
+    try {
+      const saved = localStorage.getItem('fox_season');
+      return (saved as SeasonType) || getAutoSeason();
+    } catch {
+      return getAutoSeason();
+    }
+  });
+
+  const [particlesEnabled, setParticlesEnabled] = useState<boolean>(true);
+
+  // Sync atmosphere with real-time clock if enabled
+  useEffect(() => {
+    if (!autoSyncAtmosphere) return;
+    const updateTime = () => {
+      setTimeOfDay(getAutoTimeOfDay());
+      setSeason(getAutoSeason());
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 60000);
+    return () => clearInterval(interval);
+  }, [autoSyncAtmosphere]);
+
+  // Modals state for soothing companion suite
+  const [isAmbientMixerOpen, setIsAmbientMixerOpen] = useState(false);
+  const [isPostcardsOpen, setIsPostcardsOpen] = useState(false);
+  const [isBreathingOpen, setIsBreathingOpen] = useState(false);
+  const [isAtmosphereOpen, setIsAtmosphereOpen] = useState(false);
+
   // Adopted Fox Companion state
   const [adoptedFox, setAdoptedFox] = useState<AdoptedFox | null>(() => {
     try {
@@ -35,7 +105,6 @@ export default function App() {
     } catch {
       // ignore
     }
-    // Default initial companion so user immediately sees the 10 interactive options
     return {
       speciesId: 'red-fox',
       customName: '小赤赤',
@@ -80,8 +149,8 @@ export default function App() {
     }
     return {
       coins: 180,
-      placedSnack: GARDEN_SNACKS[1], // 酥炸油豆腐
-      placedToy: GARDEN_TOYS[0], // 叮噹毛線球
+      placedSnack: GARDEN_SNACKS[1],
+      placedToy: GARDEN_TOYS[0],
       visitors: [],
       unlockedFoxIds: ['red-fox', 'arctic-fox', 'fennec-fox'],
     };
@@ -253,8 +322,31 @@ export default function App() {
     setSearchQuery('');
   };
 
+  // Dynamic atmosphere background classes
+  const atmoContainerClasses = useMemo(() => {
+    if (timeOfDay === 'night') {
+      return 'bg-[#181614] text-[#ece7e1] selection:bg-amber-900 selection:text-amber-100';
+    }
+    if (timeOfDay === 'sunset') {
+      return 'bg-gradient-to-b from-[#fdf6ee] via-[#faece0] to-[#f8e5d6] text-stone-800 selection:bg-orange-200 selection:text-orange-900';
+    }
+    // Day
+    return 'bg-[#faf8f5] text-stone-800 selection:bg-amber-200 selection:text-amber-900';
+  }, [timeOfDay]);
+
   return (
-    <div className="min-h-screen bg-[#faf8f5] text-stone-800 flex flex-col selection:bg-amber-200 selection:text-amber-900 font-sans">
+    <div
+      className={`min-h-screen flex flex-col font-sans transition-colors duration-1000 relative ${atmoContainerClasses} ${
+        timeOfDay === 'night' ? 'dark' : ''
+      }`}
+    >
+      {/* Lightweight Canvas Ambient Season Particles */}
+      <SeasonParticlesCanvas
+        season={season}
+        timeOfDay={timeOfDay}
+        enabled={particlesEnabled}
+      />
+
       {/* Floating Hearts Container */}
       <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
         <AnimatePresence>
@@ -282,11 +374,15 @@ export default function App() {
       <Header
         onOpenQuiz={() => setIsQuizOpen(true)}
         onOpenCrystalBall={() => setIsCrystalBallOpen(true)}
+        onOpenAmbientMixer={() => setIsAmbientMixerOpen(true)}
+        onOpenPostcards={() => setIsPostcardsOpen(true)}
+        onOpenBreathing={() => setIsBreathingOpen(true)}
+        onOpenAtmosphere={() => setIsAtmosphereOpen(true)}
         totalPetCount={totalPetCount}
       />
 
       {/* Mode Selector Navigation */}
-      <div className="mt-4">
+      <div className="mt-4 z-20">
         <GameModeNav
           currentMode={gameMode}
           onSelectMode={handleSelectGameMode}
@@ -296,7 +392,7 @@ export default function App() {
       </div>
 
       {/* Main Container */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6">
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6 z-20">
         <AnimatePresence mode="wait">
           {/* 1. 認領一隻專屬養成模式 */}
           {gameMode === 'adopt' && (
@@ -352,16 +448,16 @@ export default function App() {
               />
 
               {/* Status Bar */}
-              <div className="flex items-center justify-between px-2 text-xs font-medium text-stone-500">
+              <div className="flex items-center justify-between px-2 text-xs font-medium text-stone-500 dark:text-stone-400">
                 <div className="flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
                   <span>
                     共收錄{' '}
-                    <strong className="text-stone-800">
+                    <strong className="text-stone-800 dark:text-stone-200">
                       {FOX_SPECIES_LIST.length}
                     </strong>{' '}
                     種奇幻與自然狐狸 · 當前顯示{' '}
-                    <strong className="text-amber-700 font-bold">
+                    <strong className="text-amber-700 dark:text-amber-400 font-bold">
                       {filteredFoxes.length}
                     </strong>{' '}
                     隻
@@ -376,7 +472,7 @@ export default function App() {
                     onClick={handleResetFilters}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    className="flex items-center gap-1 text-amber-700 hover:text-amber-900 hover:underline cursor-pointer font-medium"
+                    className="flex items-center gap-1 text-amber-700 dark:text-amber-400 hover:text-amber-900 hover:underline cursor-pointer font-medium"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     <span>重設所有條件</span>
@@ -406,15 +502,15 @@ export default function App() {
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="bg-white/80 rounded-3xl p-12 text-center border border-dashed border-stone-300 max-w-md mx-auto space-y-4"
+                    className="bg-white/80 dark:bg-stone-800/80 rounded-3xl p-12 text-center border border-dashed border-stone-300 dark:border-stone-700 max-w-md mx-auto space-y-4"
                   >
-                    <div className="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center mx-auto text-3xl">
+                    <div className="w-16 h-16 rounded-full bg-stone-100 dark:bg-stone-700 flex items-center justify-center mx-auto text-3xl">
                       🔍
                     </div>
-                    <h4 className="text-lg font-bold text-stone-800 font-serif">
+                    <h4 className="text-lg font-bold text-stone-800 dark:text-stone-100 font-serif">
                       找不到符合條件的狐狸朋友
                     </h4>
-                    <p className="text-xs text-stone-500">
+                    <p className="text-xs text-stone-500 dark:text-stone-400">
                       嘗試調整搜尋關鍵字，或是切換生境篩選條件來發現更多可愛狐狸！
                     </p>
                     <motion.button
@@ -471,6 +567,61 @@ export default function App() {
         onOpenCrystalBall={() => setIsCrystalBallOpen(true)}
       />
 
+      {/* Ambient Sound Mixer Modal */}
+      <AmbientSoundMixer
+        isOpen={isAmbientMixerOpen}
+        onClose={() => setIsAmbientMixerOpen(false)}
+      />
+
+      {/* Fox Postcard Adventure Modal */}
+      <FoxPostcardAdventure
+        foxName={adoptedFox?.customName || '小狐狸'}
+        isOpen={isPostcardsOpen}
+        onClose={() => setIsPostcardsOpen(false)}
+      />
+
+      {/* Guided Relaxation Breathing Modal */}
+      <FoxBreathingGuide
+        foxName={adoptedFox?.customName || '小狐狸'}
+        isOpen={isBreathingOpen}
+        onClose={() => setIsBreathingOpen(false)}
+      />
+
+      {/* Day/Night & Season Atmosphere Controller Modal */}
+      <AtmosphereController
+        timeOfDay={timeOfDay}
+        season={season}
+        autoSync={autoSyncAtmosphere}
+        onTimeChange={(t) => {
+          setTimeOfDay(t);
+          try {
+            localStorage.setItem('fox_time_of_day', t);
+          } catch {
+            // ignore
+          }
+        }}
+        onSeasonChange={(s) => {
+          setSeason(s);
+          try {
+            localStorage.setItem('fox_season', s);
+          } catch {
+            // ignore
+          }
+        }}
+        onAutoSyncToggle={(val) => {
+          setAutoSyncAtmosphere(val);
+          try {
+            localStorage.setItem('fox_auto_sync_atmo', JSON.stringify(val));
+          } catch {
+            // ignore
+          }
+        }}
+        particlesEnabled={particlesEnabled}
+        onToggleParticles={setParticlesEnabled}
+        isOpen={isAtmosphereOpen}
+        onClose={() => setIsAtmosphereOpen(false)}
+      />
+
       {/* Detailed Fox Profile Modal */}
       <FoxModal
         fox={activeFox}
@@ -492,6 +643,9 @@ export default function App() {
         onClose={() => setIsCrystalBallOpen(false)}
         onViewFoxByName={handleViewFoxByName}
       />
+
+      {/* PWA In-App Install Prompt Banner */}
+      <PwaInstallPrompt />
     </div>
   );
 }
