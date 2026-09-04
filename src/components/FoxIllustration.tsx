@@ -8,6 +8,16 @@ import cuteGrayFox from '../assets/images/cute_gray_fox_1788489130744.jpg';
 import cuteBatearedFox from '../assets/images/cute_bateared_fox_1788489147895.jpg';
 import cuteStarfallFox from '../assets/images/cute_starfall_fox_1788489167289.jpg';
 import cuteCelestialKitsune from '../assets/images/cute_celestial_kitsune_1788489186013.jpg';
+import cuteBlueFox from '../assets/images/cute_blue_fox_1788504878956.jpg';
+import cuteCorsacFox from '../assets/images/cute_corsac_fox_1788504895324.jpg';
+import cuteDarwinsFox from '../assets/images/cute_darwins_fox_1788504907509.jpg';
+import cuteManedWolf from '../assets/images/cute_maned_wolf_1788504922083.jpg';
+import cuteInariFox from '../assets/images/cute_inari_fox_1788504935605.jpg';
+import cuteKitsunebiFox from '../assets/images/cute_kitsunebi_fox_1788504950980.jpg';
+import cuteReynardFox from '../assets/images/cute_reynard_fox_1788504962501.jpg';
+import cuteYakanFox from '../assets/images/cute_yakan_fox_1788504976839.jpg';
+import cuteCelestialTenko from '../assets/images/cute_celestial_tenko_1788504989119.jpg';
+import cuteLunarFox from '../assets/images/cute_lunar_fox_1788505002449.jpg';
 
 interface FoxIllustrationProps {
   foxId: string;
@@ -88,35 +98,35 @@ const FOX_IMAGE_MAP: Record<
     isMythical: true,
   },
   'blue-fox': {
-    src: cuteArcticFox,
+    src: cuteBlueFox,
     alt: '藍狐北大西洋岩岸 3D 卡通立體肖像',
     ringColor: 'ring-indigo-300/80',
     shadowColor: 'shadow-indigo-500/25',
     badge: '🪨',
   },
   'corsac-fox': {
-    src: cuteFennecFox,
+    src: cuteCorsacFox,
     alt: '沙狐中亞草原 3D 卡通立體肖像',
     ringColor: 'ring-amber-500/80',
     shadowColor: 'shadow-amber-600/25',
     badge: '🌾',
   },
   'darwins-fox': {
-    src: cuteGrayFox,
+    src: cuteDarwinsFox,
     alt: '達爾文狐雨林隱者 3D 卡通立體肖像',
     ringColor: 'ring-teal-400/80',
     shadowColor: 'shadow-teal-600/25',
     badge: '🌿',
   },
   'maned-wolf': {
-    src: cuteRedFox,
+    src: cuteManedWolf,
     alt: '南美鬃狼高跟鞋大巨人 3D 卡通立體肖像',
     ringColor: 'ring-amber-600/90',
     shadowColor: 'shadow-orange-700/35',
     badge: '🦵',
   },
   'inari-fox': {
-    src: cuteCelestialKitsune,
+    src: cuteInariFox,
     alt: '稻荷神使白狐神獸 3D 卡通立體肖像',
     ringColor: 'ring-red-400/90',
     shadowColor: 'shadow-red-600/35',
@@ -124,7 +134,7 @@ const FOX_IMAGE_MAP: Record<
     isMythical: true,
   },
   'kitsunebi-fox': {
-    src: cuteStarfallFox,
+    src: cuteKitsunebiFox,
     alt: '狐火靈狐幽夜冷火 3D 卡通立體肖像',
     ringColor: 'ring-cyan-400/90',
     shadowColor: 'shadow-cyan-600/35',
@@ -132,7 +142,7 @@ const FOX_IMAGE_MAP: Record<
     isMythical: true,
   },
   'reynard-fox': {
-    src: cuteRedFox,
+    src: cuteReynardFox,
     alt: '智狐雷納德古典貴族 3D 卡通立體肖像',
     ringColor: 'ring-rose-500/90',
     shadowColor: 'shadow-rose-700/35',
@@ -140,7 +150,7 @@ const FOX_IMAGE_MAP: Record<
     isMythical: true,
   },
   'yakan-fox': {
-    src: cuteCelestialKitsune,
+    src: cuteYakanFox,
     alt: '野干神狐梵音禪宗 3D 卡通立體肖像',
     ringColor: 'ring-purple-600/90',
     shadowColor: 'shadow-purple-800/35',
@@ -148,7 +158,7 @@ const FOX_IMAGE_MAP: Record<
     isMythical: true,
   },
   'celestial-tenko': {
-    src: cuteCelestialKitsune,
+    src: cuteCelestialTenko,
     alt: '金狐天狐大仙宗主 3D 卡通立體肖像',
     ringColor: 'ring-yellow-400/90',
     shadowColor: 'shadow-yellow-500/35',
@@ -156,7 +166,7 @@ const FOX_IMAGE_MAP: Record<
     isMythical: true,
   },
   'lunar-fox': {
-    src: cuteStarfallFox,
+    src: cuteLunarFox,
     alt: '幽夜月狐靜謐守月 3D 卡通立體肖像',
     ringColor: 'ring-indigo-400/90',
     shadowColor: 'shadow-indigo-800/35',
