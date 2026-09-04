@@ -411,27 +411,20 @@ export const CourtyardGardenView: React.FC<CourtyardGardenViewProps> = ({
                   </div>
                 </motion.div>
 
-                {/* Animated Fox Avatar in the Scene */}
+                {/* Grounded Fox Avatar in the Scene */}
                 <motion.div
-                  animate={{
-                    y: [0, -6, 0],
-                  }}
-                  transition={{
-                    duration: 3 + (index % 3) * 0.5,
-                    repeat: Infinity,
-                    ease: 'easeInOut',
-                  }}
-                  whileHover={{ scale: 1.15 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.96 }}
                   onClick={() => setActiveInteractiveFoxId(isMenuOpen ? null : visitor.id)}
                   className="cursor-pointer relative group flex flex-col items-center"
                 >
                   {/* Soft floor shadow */}
-                  <div className="absolute -bottom-2 w-20 h-4 bg-black/15 rounded-full blur-[2px] pointer-events-none" />
+                  <div className="absolute -bottom-1.5 w-20 h-3.5 bg-stone-900/20 dark:bg-black/30 rounded-full blur-[2px] pointer-events-none" />
 
                   <FoxIllustration foxId={visitor.speciesId} size="md" />
 
-                  {/* Gentle Ripple Ring on Hover */}
-                  <div className="absolute -inset-2 rounded-full border-2 border-amber-400/40 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none animate-ping" />
+                  {/* Gentle border highlight on Hover */}
+                  <div className="absolute -inset-1 rounded-3xl border-2 border-amber-400/60 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                 </motion.div>
 
                 {/* Interactive Action Menu Popover directly over the Fox */}

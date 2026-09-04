@@ -19,21 +19,10 @@ export const FoxLoadingScreen: React.FC<FoxLoadingScreenProps> = ({
           className="absolute inset-0 bg-amber-200 dark:bg-amber-900/40 rounded-full blur-md"
         />
 
-        {/* Animated Bouncing Fox */}
-        <motion.div
-          animate={{
-            y: [0, -10, 0],
-            rotate: [-4, 4, -4],
-          }}
-          transition={{
-            duration: 0.6,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-          className="text-5xl select-none relative z-10 filter drop-shadow-md"
-        >
+        {/* Grounded Calm Fox */}
+        <div className="text-5xl select-none relative z-10 filter drop-shadow-md">
           🦊
-        </motion.div>
+        </div>
 
         {/* Floating Paw Prints */}
         <motion.span

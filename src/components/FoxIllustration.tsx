@@ -211,28 +211,29 @@ export const FoxIllustration: React.FC<FoxIllustrationProps> = ({
 
   const activeAcc = accessoryId && accessoryId !== 'none' ? ACCESSORY_ICON_MAP[accessoryId] : null;
 
-  // Animation variants depending on activity & stage
-  let motionAnimate: Record<string, unknown> = { y: [0, -5, 0] };
-  let motionTransition: Record<string, unknown> = { duration: 3.8, repeat: Infinity, ease: 'easeInOut' };
+  // Interactive animations (only triggered on explicit user interaction, no idle floating)
+  let motionAnimate: Record<string, unknown> | undefined = undefined;
+  let motionTransition: Record<string, unknown> | undefined = undefined;
 
   if (isPetting) {
     motionAnimate = {
-      scale: [1, 1.15, 0.94, 1.08, 1],
-      rotate: [0, -3, 3, -1.5, 0],
+      scale: [1, 1.08, 0.96, 1.04, 1],
+      rotate: [0, -2, 2, -1, 0],
     };
-    motionTransition = { duration: 0.65, ease: 'easeOut' };
+    motionTransition = { duration: 0.5, ease: 'easeOut' };
   } else if (activity === 'sleeping') {
-    motionAnimate = { scale: [1, 0.96, 1], y: [0, 4, 0] };
-    motionTransition = { duration: 2.8, repeat: Infinity, ease: 'easeInOut' };
+    // Subtle, calm chest breathing without floating y-drift
+    motionAnimate = { scale: [1, 0.98, 1] };
+    motionTransition = { duration: 3.5, repeat: Infinity, ease: 'easeInOut' };
   } else if (activity === 'eating') {
-    motionAnimate = { scale: [1, 1.06, 0.98, 1.05, 1], y: [0, -4, 0, -2, 0] };
-    motionTransition = { duration: 0.5, repeat: 3, ease: 'easeInOut' };
+    motionAnimate = { scale: [1, 1.05, 0.98, 1] };
+    motionTransition = { duration: 0.45, repeat: 3, ease: 'easeInOut' };
   } else if (activity === 'playing') {
-    motionAnimate = { y: [0, -22, 0, -12, 0], rotate: [0, -6, 6, -3, 0] };
-    motionTransition = { duration: 1.2, repeat: 2, ease: 'easeInOut' };
+    motionAnimate = { scale: [1, 1.06, 1], rotate: [0, -3, 3, 0] };
+    motionTransition = { duration: 0.6, repeat: 2, ease: 'easeInOut' };
   } else if (activity === 'bathing') {
-    motionAnimate = { y: [0, 2, -2, 0], rotate: [0, -1, 1, 0] };
-    motionTransition = { duration: 1.8, repeat: Infinity, ease: 'easeInOut' };
+    motionAnimate = { rotate: [0, -1, 1, 0] };
+    motionTransition = { duration: 2.0, repeat: Infinity, ease: 'easeInOut' };
   }
 
   // Stage scaling
@@ -243,31 +244,18 @@ export const FoxIllustration: React.FC<FoxIllustrationProps> = ({
       className={`relative inline-flex items-center justify-center select-none ${sizeContainerMap[size]} ${stageScale} transition-transform`}
       animate={motionAnimate}
       transition={motionTransition}
-      whileHover={{ scale: 1.05 }}
+      whileHover={{ scale: 1.02 }}
     >
       {/* Mystic Stage Cosmic Halo / Radiance */}
       {stage === 'mystic' && (
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 16, repeat: Infinity, ease: 'linear' }}
-          className="absolute -inset-5 rounded-full border-2 border-dashed border-amber-300/60 pointer-events-none"
+        <div
+          className="absolute -inset-4 rounded-full border border-dashed border-amber-300/40 pointer-events-none"
         />
       )}
 
-      {/* Outer Glow & Soft Aura */}
-      <motion.div
-        className={`absolute -inset-2 ${roundedClassMap[size]} bg-gradient-to-tr from-amber-300/30 via-orange-300/20 to-purple-300/30 blur-lg pointer-events-none`}
-        animate={
-          stage === 'mystic' || foxData.isMythical
-            ? {
-                scale: [1, 1.18, 1],
-                opacity: [0.65, 0.95, 0.65],
-              }
-            : {
-                opacity: [0.4, 0.65, 0.4],
-              }
-        }
-        transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut' }}
+      {/* Outer Glow & Soft Aura (calm static aura, no pulsating distraction) */}
+      <div
+        className={`absolute -inset-1.5 ${roundedClassMap[size]} bg-gradient-to-tr from-amber-300/20 via-orange-300/15 to-purple-300/20 blur-md pointer-events-none opacity-40`}
       />
 
       {/* Main Image Frame */}

@@ -217,13 +217,9 @@ export function FoxPostcardAdventure({
                 <div className="p-6 rounded-3xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 text-center space-y-4">
                   {isCompleted ? (
                     <>
-                      <motion.div
-                        animate={{ y: [0, -8, 0], rotate: [-2, 2, -2] }}
-                        transition={{ repeat: Infinity, duration: 2 }}
-                        className="text-6xl mx-auto"
-                      >
+                      <div className="text-6xl mx-auto select-none">
                         🦊💌
-                      </motion.div>
+                      </div>
                       <div>
                         <h4 className="text-lg font-bold font-serif text-amber-900 dark:text-amber-200">
                           {foxName} 散步回來了！
