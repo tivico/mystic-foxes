@@ -1,7 +1,7 @@
 {
-  "id": "./",
-  "start_url": "./",
-  "scope": "./",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
   "name": "奇幻狐狸生態圖鑑與陪伴養成",
   "short_name": "靈狐物語",
   "description": "超萌純淨療癒狐狸陪伴養成、自然白噪音混音與呼吸冥想放鬆。",
@@ -11,15 +11,27 @@
   "background_color": "#faf8f5",
   "icons": [
     {
-      "src": "./fox-icon.svg",
-      "sizes": "192x192 512x512",
+      "src": "/fox-icon.svg",
+      "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "./fox-icon-maskable.svg",
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
       "purpose": "maskable"
     }
   ]

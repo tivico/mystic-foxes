@@ -1,17 +1,27 @@
 // Fox Healing Companion Service Worker for Offline PWA
-const CACHE_NAME = 'fox-healing-v1';
+const CACHE_NAME = 'fox-healing-v2';
 const STATIC_ASSETS = [
-  './',
-  './index.html',
-  './fox-icon.svg',
-  './fox-icon-maskable.svg',
-  './manifest.webmanifest'
+  '/',
+  '/index.html',
+  '/fox-icon.svg',
+  '/fox-icon-maskable.svg',
+  '/manifest.webmanifest',
+  '/apple-touch-icon.png',
+  '/pwa-192x192.png',
+  '/pwa-512x512.png',
+  '/og-image.jpg'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
+    caches.open(CACHE_NAME).then(async (cache) => {
+      for (const asset of STATIC_ASSETS) {
+        try {
+          await cache.add(asset);
+        } catch {
+          // Ignore individual asset fetch error during build
+        }
+      }
     }).then(() => self.skipWaiting())
   );
 });

@@ -41,12 +41,14 @@ interface AdoptedFoxViewProps {
   adoptedFox: AdoptedFox | null;
   onUpdateFox: (updater: (prev: AdoptedFox) => AdoptedFox) => void;
   onAdoptNew: (speciesId: string, customName: string) => void;
+  onPetFox?: (foxId: string) => void;
 }
 
 export const AdoptedFoxView: React.FC<AdoptedFoxViewProps> = ({
   adoptedFox,
   onUpdateFox,
   onAdoptNew,
+  onPetFox,
 }) => {
   // Adoption onboarding state if user has no companion yet
   const [selectedSpeciesId, setSelectedSpeciesId] = useState('red-fox');
@@ -139,6 +141,7 @@ export const AdoptedFoxView: React.FC<AdoptedFoxViewProps> = ({
   const handlePetAction = () => {
     if (!adoptedFox) return;
     playPettingSound(adoptedFox.speciesId);
+    onPetFox?.(adoptedFox.speciesId);
     setIsPettingAnim(true);
     setTimeout(() => setIsPettingAnim(false), 700);
 

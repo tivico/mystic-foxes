@@ -10,6 +10,7 @@ interface HeaderProps {
   onOpenBreathing: () => void;
   onOpenAtmosphere: () => void;
   onOpenMythVsReality: () => void;
+  onOpenSaveBackup?: () => void;
   totalPetCount: number;
 }
 
@@ -21,6 +22,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenBreathing,
   onOpenAtmosphere,
   onOpenMythVsReality,
+  onOpenSaveBackup,
   totalPetCount,
 }) => {
   const [isAmbientPlaying, setIsAmbientPlaying] = useState(false);
@@ -170,6 +172,22 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="text-sm">🌤️</span>
               <span>晝夜四季</span>
             </motion.button>
+
+            {/* Save & Backup Modal Button */}
+            {onOpenSaveBackup && (
+              <motion.button
+                type="button"
+                id="header-save-backup-btn"
+                onClick={onOpenSaveBackup}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 text-xs font-bold shadow-2xs transition-all cursor-pointer"
+                title="存檔備份、JSON 匯出與匯入"
+              >
+                <span className="text-sm">💾</span>
+                <span>存檔備份</span>
+              </motion.button>
+            )}
 
             {/* Myth vs Reality Codex */}
             <motion.button

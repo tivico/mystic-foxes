@@ -172,4 +172,17 @@ export interface GardenState {
   visitors: GardenVisitor[];
   coins: number;
   unlockedFoxIds: string[];
+  lastActiveTimestamp?: number;
+}
+
+export interface FoxSaveData {
+  version: number;
+  exportedAt: string;
+  gameMode: GamePlayMode;
+  adoptedFox: AdoptedFox | null;
+  gardenState: GardenState;
+  petCounts: Record<string, number>;
+  timeOfDay?: string;
+  season?: string;
+  lastActiveTimestamp?: number;
 }

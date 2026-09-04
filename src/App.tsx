@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { FoxSpecies, HabitatType, FoxCategory, GamePlayMode, AdoptedFox, GardenState } from './types';
+import { FoxSpecies, HabitatType, FoxCategory, GamePlayMode, AdoptedFox, GardenState, FoxSaveData } from './types';
 import { FOX_SPECIES_LIST } from './data/foxesData';
 import { GARDEN_SNACKS, GARDEN_TOYS } from './data/petGameData';
 import { Header } from './components/Header';
@@ -20,6 +20,14 @@ import { AtmosphereController } from './components/AtmosphereController';
 import { MythVsRealityView } from './components/MythVsRealityView';
 import { SeasonParticlesCanvas, SeasonType, TimeOfDay } from './components/SeasonParticlesCanvas';
 import { PwaInstallPrompt } from './components/PwaInstallPrompt';
+import { SaveBackupModal } from './components/SaveBackupModal';
+import { OfflineEarningsModal } from './components/OfflineEarningsModal';
+import { FoxLoadingScreen } from './components/FoxLoadingScreen';
+import {
+  SAVE_KEYS,
+  persistAllStatesToStorage,
+  calculateOfflineEarnings,
+} from './utils/saveManager';
 import { playPettingSound } from './utils/foxAudio';
 import { Sparkles, RotateCcw } from 'lucide-react';
 
@@ -149,22 +157,122 @@ export default function App() {
       // ignore
     }
     return {
-      coins: 180,
+      coins: 195,
       placedSnack: GARDEN_SNACKS[1],
       placedToy: GARDEN_TOYS[0],
-      visitors: [],
+      visitors: [
+        {
+          id: 'red-fox-init',
+          speciesId: 'red-fox',
+          activity: '在日式緣側木廊舒服地享用油豆腐 🍙',
+          visitedAt: '剛才',
+          satisfaction: 90,
+          giftGiven: false,
+        },
+      ],
       unlockedFoxIds: ['red-fox', 'arctic-fox', 'fennec-fox'],
+      lastActiveTimestamp: Date.now(),
     };
   });
 
-  // Persist game mode
+  // Mode switching transition state (to prevent 1-3s blank screen)
+  const [isSwitchingMode, setIsSwitchingMode] = useState(false);
+
+  // Save & Backup modal state
+  const [isSaveBackupOpen, setIsSaveBackupOpen] = useState(false);
+
+  // Offline earnings modal state
+  const [offlineEarnings, setOfflineEarnings] = useState<{
+    coins: number;
+    duration: string;
+  } | null>(null);
+
+  // Check offline earnings on startup based on Date.now() elapsed delta
+  useEffect(() => {
+    try {
+      const lastActiveStr = localStorage.getItem(SAVE_KEYS.LAST_ACTIVE);
+      const lastActive = lastActiveStr ? Number(lastActiveStr) : gardenState.lastActiveTimestamp;
+      if (lastActive) {
+        const result = calculateOfflineEarnings(lastActive, gardenState.visitors.length);
+        if (result && result.coinsEarned > 0) {
+          setOfflineEarnings({
+            coins: result.coinsEarned,
+            duration: result.formattedDuration,
+          });
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const handleClaimOfflineEarnings = () => {
+    if (!offlineEarnings) return;
+    const coinsToAdd = offlineEarnings.coins;
+    setGardenState((prev) => ({
+      ...prev,
+      coins: prev.coins + coinsToAdd,
+      lastActiveTimestamp: Date.now(),
+    }));
+    setOfflineEarnings(null);
+  };
+
+  // Petting counts for each fox
+  const [petCounts, setPetCounts] = useState<Record<string, number>>(() => {
+    try {
+      const saved = localStorage.getItem('fox_pet_counts');
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  // Guaranteed continuous persistence of all states to localStorage
+  useEffect(() => {
+    persistAllStatesToStorage({
+      gameMode,
+      adoptedFox,
+      gardenState,
+      petCounts,
+      timeOfDay,
+      season,
+    });
+  }, [gameMode, adoptedFox, gardenState, petCounts, timeOfDay, season]);
+
+  // Flush to localStorage immediately on tab blur or browser close
+  useEffect(() => {
+    const handleSaveBeforeLeave = () => {
+      persistAllStatesToStorage({
+        gameMode,
+        adoptedFox,
+        gardenState,
+        petCounts,
+        timeOfDay,
+        season,
+      });
+    };
+
+    window.addEventListener('beforeunload', handleSaveBeforeLeave);
+    document.addEventListener('visibilitychange', handleSaveBeforeLeave);
+    return () => {
+      window.removeEventListener('beforeunload', handleSaveBeforeLeave);
+      document.removeEventListener('visibilitychange', handleSaveBeforeLeave);
+    };
+  }, [gameMode, adoptedFox, gardenState, petCounts, timeOfDay, season]);
+
+  // Persist game mode with responsive feedback
   const handleSelectGameMode = (mode: GamePlayMode) => {
+    if (mode === gameMode) return;
+    setIsSwitchingMode(true);
     setGameMode(mode);
     try {
       localStorage.setItem('fox_game_mode', mode);
     } catch {
       // ignore
     }
+    setTimeout(() => {
+      setIsSwitchingMode(false);
+    }, 80);
   };
 
   // Persist adopted fox
@@ -172,11 +280,6 @@ export default function App() {
     setAdoptedFox((prev) => {
       if (!prev) return prev;
       const next = updater(prev);
-      try {
-        localStorage.setItem('adopted_fox_data', JSON.stringify(next));
-      } catch {
-        // ignore
-      }
       return next;
     });
   };
@@ -200,24 +303,45 @@ export default function App() {
       adventureLog: [],
     };
     setAdoptedFox(newFox);
-    try {
-      localStorage.setItem('adopted_fox_data', JSON.stringify(newFox));
-    } catch {
-      // ignore
-    }
   };
 
   // Persist garden state
   const handleUpdateGarden = (updater: (prev: GardenState) => GardenState) => {
     setGardenState((prev) => {
       const next = updater(prev);
-      try {
-        localStorage.setItem('garden_state_data', JSON.stringify(next));
-      } catch {
-        // ignore
-      }
-      return next;
+      return {
+        ...next,
+        lastActiveTimestamp: Date.now(),
+      };
     });
+  };
+
+  // Handle successful save file import
+  const handleImportSaveSuccess = (imported: FoxSaveData) => {
+    setGameMode(imported.gameMode || 'adopt');
+    setAdoptedFox(imported.adoptedFox);
+    setGardenState(imported.gardenState);
+    setPetCounts(imported.petCounts || {});
+    if (imported.timeOfDay) setTimeOfDay(imported.timeOfDay as TimeOfDay);
+    if (imported.season) setSeason(imported.season as SeasonType);
+
+    persistAllStatesToStorage({
+      gameMode: imported.gameMode || 'adopt',
+      adoptedFox: imported.adoptedFox,
+      gardenState: imported.gardenState,
+      petCounts: imported.petCounts || {},
+      timeOfDay: imported.timeOfDay,
+      season: imported.season,
+    });
+  };
+
+  const handleResetSave = () => {
+    try {
+      localStorage.clear();
+    } catch {
+      // ignore
+    }
+    window.location.reload();
   };
 
   // Encyclopedia filters
@@ -229,16 +353,6 @@ export default function App() {
   const [activeFox, setActiveFox] = useState<FoxSpecies | null>(null);
   const [isQuizOpen, setIsQuizOpen] = useState(false);
   const [isCrystalBallOpen, setIsCrystalBallOpen] = useState(false);
-
-  // Petting counts for each fox
-  const [petCounts, setPetCounts] = useState<Record<string, number>>(() => {
-    try {
-      const saved = localStorage.getItem('fox_pet_counts');
-      return saved ? JSON.parse(saved) : {};
-    } catch {
-      return {};
-    }
-  });
 
   // Floating heart particles for quick-pet on cards
   const [floatingHearts, setFloatingHearts] = useState<
@@ -380,6 +494,7 @@ export default function App() {
         onOpenBreathing={() => setIsBreathingOpen(true)}
         onOpenAtmosphere={() => setIsAtmosphereOpen(true)}
         onOpenMythVsReality={() => handleSelectGameMode('myth-vs-reality')}
+        onOpenSaveBackup={() => setIsSaveBackupOpen(true)}
         totalPetCount={totalPetCount}
       />
 
@@ -395,39 +510,44 @@ export default function App() {
 
       {/* Main Container */}
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6 z-20">
-        <AnimatePresence mode="wait">
-          {/* 1. 認領一隻專屬養成模式 */}
-          {gameMode === 'adopt' && (
-            <motion.div
-              key="adopt-mode-view"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.3 }}
-            >
-              <AdoptedFoxView
-                adoptedFox={adoptedFox}
-                onUpdateFox={handleUpdateAdoptedFox}
-                onAdoptNew={handleAdoptNew}
-              />
-            </motion.div>
-          )}
+        {isSwitchingMode ? (
+          <FoxLoadingScreen message="小狐狸正輕快奔馳前往新模式..." />
+        ) : (
+          <AnimatePresence>
+            {/* 1. 認領一隻專屬養成模式 */}
+            {gameMode === 'adopt' && (
+              <motion.div
+                key="adopt-mode-view"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <AdoptedFoxView
+                  adoptedFox={adoptedFox}
+                  onUpdateFox={handleUpdateAdoptedFox}
+                  onAdoptNew={handleAdoptNew}
+                  onPetFox={(id) => handlePet(id)}
+                />
+              </motion.div>
+            )}
 
-          {/* 2. 放置養成庭院模式 */}
-          {gameMode === 'idle' && (
-            <motion.div
-              key="idle-mode-view"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.3 }}
-            >
-              <CourtyardGardenView
-                gardenState={gardenState}
-                onUpdateGarden={handleUpdateGarden}
-              />
-            </motion.div>
-          )}
+            {/* 2. 放置養成庭院模式 */}
+            {gameMode === 'idle' && (
+              <motion.div
+                key="idle-mode-view"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <CourtyardGardenView
+                  gardenState={gardenState}
+                  onUpdateGarden={handleUpdateGarden}
+                  onPetFox={(id) => handlePet(id)}
+                />
+              </motion.div>
+            )}
 
           {/* 3. 靈狐全圖鑑百科模式 */}
           {gameMode === 'encyclopedia' && (
@@ -575,6 +695,7 @@ export default function App() {
             </motion.div>
           )}
         </AnimatePresence>
+        )}
       </main>
 
       {/* Footer */}
@@ -659,6 +780,30 @@ export default function App() {
         onClose={() => setIsCrystalBallOpen(false)}
         onViewFoxByName={handleViewFoxByName}
       />
+
+      {/* Save & Backup Modal */}
+      <SaveBackupModal
+        isOpen={isSaveBackupOpen}
+        onClose={() => setIsSaveBackupOpen(false)}
+        gameMode={gameMode}
+        adoptedFox={adoptedFox}
+        gardenState={gardenState}
+        petCounts={petCounts}
+        timeOfDay={timeOfDay}
+        season={season}
+        onImportSuccess={handleImportSaveSuccess}
+        onResetSave={handleResetSave}
+      />
+
+      {/* Offline Earnings Settlement Modal */}
+      {offlineEarnings && (
+        <OfflineEarningsModal
+          isOpen={!!offlineEarnings}
+          onClaim={handleClaimOfflineEarnings}
+          coinsEarned={offlineEarnings.coins}
+          formattedDuration={offlineEarnings.duration}
+        />
+      )}
 
       {/* PWA In-App Install Prompt Banner */}
       <PwaInstallPrompt />
