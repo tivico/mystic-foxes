@@ -14,6 +14,7 @@ import {
   Database,
   Search,
   X,
+  Clock,
 } from 'lucide-react';
 
 interface MobileBottomDockProps {
@@ -27,6 +28,8 @@ interface MobileBottomDockProps {
   onOpenCrystalBall: () => void;
   onOpenPostcards: () => void;
   onOpenSaveBackup: () => void;
+  onOpenDailyJournal: () => void;
+  onOpenFocusCompanion: () => void;
 }
 
 export const MobileBottomDock: React.FC<MobileBottomDockProps> = ({
@@ -40,6 +43,8 @@ export const MobileBottomDock: React.FC<MobileBottomDockProps> = ({
   onOpenCrystalBall,
   onOpenPostcards,
   onOpenSaveBackup,
+  onOpenDailyJournal,
+  onOpenFocusCompanion,
 }) => {
   const [isToolsOpen, setIsToolsOpen] = useState(false);
 
@@ -133,6 +138,44 @@ export const MobileBottomDock: React.FC<MobileBottomDockProps> = ({
                 >
                   <X size={18} />
                 </button>
+              </div>
+
+              {/* Group 0: 深度治癒體驗 (Focus & Journal) */}
+              <div className="space-y-2">
+                <div className="text-[11px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider">
+                  ✦ 深度治癒體驗（專注與日常手記）
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onOpenFocusCompanion();
+                      setIsToolsOpen(false);
+                    }}
+                    className="flex items-center gap-2.5 p-3 rounded-2xl bg-stone-900 border border-stone-700 text-left cursor-pointer"
+                  >
+                    <Clock size={20} className="text-amber-400 shrink-0" />
+                    <div>
+                      <div className="text-xs font-bold text-amber-200">靈狐陪讀專注</div>
+                      <div className="text-[10px] text-stone-400">極簡番茄鐘</div>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onOpenDailyJournal();
+                      setIsToolsOpen(false);
+                    }}
+                    className="flex items-center gap-2.5 p-3 rounded-2xl bg-amber-500/10 dark:bg-amber-950/40 border border-amber-400/40 text-left cursor-pointer"
+                  >
+                    <BookOpen size={20} className="text-amber-600 dark:text-amber-400 shrink-0" />
+                    <div>
+                      <div className="text-xs font-bold text-stone-900 dark:text-stone-100">狐狐日常手記</div>
+                      <div className="text-[10px] text-amber-700 dark:text-amber-400">第一人稱日記</div>
+                    </div>
+                  </button>
+                </div>
               </div>
 
               {/* Group 1: 靈狐試煉考堂 (New & Highlighted) */}

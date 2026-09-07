@@ -18,12 +18,15 @@ import { AmbientSoundMixer } from './components/AmbientSoundMixer';
 import { FoxPostcardAdventure } from './components/FoxPostcardAdventure';
 import { FoxBreathingGuide } from './components/FoxBreathingGuide';
 import { AtmosphereController } from './components/AtmosphereController';
+import { StorybookTextureOverlay, TextureStyle } from './components/StorybookTextureOverlay';
 import { MythVsRealityView } from './components/MythVsRealityView';
 import { SeasonParticlesCanvas, SeasonType, TimeOfDay } from './components/SeasonParticlesCanvas';
 import { PwaInstallPrompt } from './components/PwaInstallPrompt';
 import { SaveBackupModal } from './components/SaveBackupModal';
 import { OfflineEarningsModal } from './components/OfflineEarningsModal';
 import { FoxLoadingScreen } from './components/FoxLoadingScreen';
+import { FoxDailyJournalModal } from './components/FoxDailyJournalModal';
+import { FoxFocusCompanionModal } from './components/FoxFocusCompanionModal';
 import {
   SAVE_KEYS,
   persistAllStatesToStorage,
@@ -89,6 +92,25 @@ export default function App() {
 
   const [particlesEnabled, setParticlesEnabled] = useState<boolean>(true);
 
+  // 繪本光影質感與動態視差設定 (持久化存儲)
+  const [textureStyle, setTextureStyle] = useState<TextureStyle>(() => {
+    try {
+      const saved = localStorage.getItem('fox_texture_style');
+      return (saved as TextureStyle) || 'paper';
+    } catch {
+      return 'paper';
+    }
+  });
+
+  const [parallaxEnabled, setParallaxEnabled] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('fox_parallax_enabled');
+      return saved !== null ? JSON.parse(saved) : true;
+    } catch {
+      return true;
+    }
+  });
+
   // Sync atmosphere with real-time clock if enabled
   useEffect(() => {
     if (!autoSyncAtmosphere) return;
@@ -106,6 +128,8 @@ export default function App() {
   const [isPostcardsOpen, setIsPostcardsOpen] = useState(false);
   const [isBreathingOpen, setIsBreathingOpen] = useState(false);
   const [isAtmosphereOpen, setIsAtmosphereOpen] = useState(false);
+  const [isDailyJournalOpen, setIsDailyJournalOpen] = useState(false);
+  const [isFocusCompanionOpen, setIsFocusCompanionOpen] = useState(false);
 
   // Adopted Fox Companion state
   const [adoptedFox, setAdoptedFox] = useState<AdoptedFox | null>(() => {
@@ -382,6 +406,27 @@ export default function App() {
     }));
   };
 
+  const handleRewardExp = (amount: number) => {
+    handleUpdateAdoptedFox((prev) => {
+      const nextExp = prev.exp + amount;
+      const expNeeded = prev.level * 50;
+      if (nextExp >= expNeeded) {
+        return {
+          ...prev,
+          level: prev.level + 1,
+          exp: nextExp - expNeeded,
+          happiness: Math.min(100, prev.happiness + 15),
+          fluffiness: Math.min(100, prev.fluffiness + 10),
+        };
+      }
+      return {
+        ...prev,
+        exp: nextExp,
+        happiness: Math.min(100, prev.happiness + 5),
+      };
+    });
+  };
+
   // Floating heart particles for quick-pet on cards
   const [floatingHearts, setFloatingHearts] = useState<
     { id: number; x: number; y: number; text: string }[]
@@ -490,6 +535,9 @@ export default function App() {
         enabled={particlesEnabled}
       />
 
+      {/* 繪本光影質感層 (全域微弱水彩紙張紋理 / 35mm 底片微粒) */}
+      <StorybookTextureOverlay texture={textureStyle} opacity={0.22} />
+
       {/* Floating Hearts Container */}
       <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
         <AnimatePresence>
@@ -531,6 +579,8 @@ export default function App() {
         onOpenCrystalBall={() => setIsCrystalBallOpen(true)}
         onOpenPostcards={() => setIsPostcardsOpen(true)}
         onOpenSaveBackup={() => setIsSaveBackupOpen(true)}
+        onOpenDailyJournal={() => setIsDailyJournalOpen(true)}
+        onOpenFocusCompanion={() => setIsFocusCompanionOpen(true)}
       />
 
       {/* Right Canvas / Main Stage Area */}
@@ -546,6 +596,8 @@ export default function App() {
           onOpenAtmosphere={() => setIsAtmosphereOpen(true)}
           onOpenSaveBackup={() => setIsSaveBackupOpen(true)}
           onOpenAmbientMixer={() => setIsAmbientMixerOpen(true)}
+          onOpenDailyJournal={() => setIsDailyJournalOpen(true)}
+          onOpenFocusCompanion={() => setIsFocusCompanionOpen(true)}
         />
 
         {/* Main Container */}
@@ -568,6 +620,18 @@ export default function App() {
                   onUpdateFox={handleUpdateAdoptedFox}
                   onAdoptNew={handleAdoptNew}
                   onPetFox={(id) => handlePet(id)}
+                  onOpenDailyJournal={() => setIsDailyJournalOpen(true)}
+                  onOpenFocusCompanion={() => setIsFocusCompanionOpen(true)}
+                  parallaxEnabled={parallaxEnabled}
+                  textureStyle={textureStyle}
+                  onTextureStyleChange={(style) => {
+                    setTextureStyle(style);
+                    try {
+                      localStorage.setItem('fox_texture_style', style);
+                    } catch {
+                      // ignore
+                    }
+                  }}
                 />
               </motion.div>
             )}
@@ -756,6 +820,8 @@ export default function App() {
         onOpenCrystalBall={() => setIsCrystalBallOpen(true)}
         onOpenPostcards={() => setIsPostcardsOpen(true)}
         onOpenSaveBackup={() => setIsSaveBackupOpen(true)}
+        onOpenDailyJournal={() => setIsDailyJournalOpen(true)}
+        onOpenFocusCompanion={() => setIsFocusCompanionOpen(true)}
       />
     </div>
 
@@ -810,6 +876,24 @@ export default function App() {
         }}
         particlesEnabled={particlesEnabled}
         onToggleParticles={setParticlesEnabled}
+        textureStyle={textureStyle}
+        onTextureStyleChange={(style) => {
+          setTextureStyle(style);
+          try {
+            localStorage.setItem('fox_texture_style', style);
+          } catch {
+            // ignore
+          }
+        }}
+        parallaxEnabled={parallaxEnabled}
+        onToggleParallax={(val) => {
+          setParallaxEnabled(val);
+          try {
+            localStorage.setItem('fox_parallax_enabled', JSON.stringify(val));
+          } catch {
+            // ignore
+          }
+        }}
         isOpen={isAtmosphereOpen}
         onClose={() => setIsAtmosphereOpen(false)}
       />
@@ -861,6 +945,24 @@ export default function App() {
           formattedDuration={offlineEarnings.duration}
         />
       )}
+
+      {/* 靈狐第一人稱日常童趣手記 Modal */}
+      <FoxDailyJournalModal
+        isOpen={isDailyJournalOpen}
+        onClose={() => setIsDailyJournalOpen(false)}
+        adoptedFox={adoptedFox}
+        timeOfDay={timeOfDay}
+        season={season}
+      />
+
+      {/* 靈狐極簡番茄鐘 / 陪讀專注 Modal */}
+      <FoxFocusCompanionModal
+        isOpen={isFocusCompanionOpen}
+        onClose={() => setIsFocusCompanionOpen(false)}
+        adoptedFox={adoptedFox}
+        onRewardCoins={handleRewardCoins}
+        onRewardExp={handleRewardExp}
+      />
 
       {/* PWA In-App Install Prompt Banner */}
       <PwaInstallPrompt />

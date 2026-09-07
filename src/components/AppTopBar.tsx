@@ -14,6 +14,8 @@ import {
   Sunset,
   Sparkles,
   Sliders,
+  Clock,
+  BookOpen,
 } from 'lucide-react';
 
 interface AppTopBarProps {
@@ -26,6 +28,8 @@ interface AppTopBarProps {
   onOpenAtmosphere: () => void;
   onOpenSaveBackup: () => void;
   onOpenAmbientMixer?: () => void;
+  onOpenDailyJournal?: () => void;
+  onOpenFocusCompanion?: () => void;
 }
 
 export const AppTopBar: React.FC<AppTopBarProps> = ({
@@ -38,6 +42,8 @@ export const AppTopBar: React.FC<AppTopBarProps> = ({
   onOpenAtmosphere,
   onOpenSaveBackup,
   onOpenAmbientMixer,
+  onOpenDailyJournal,
+  onOpenFocusCompanion,
 }) => {
   const [isChimeActive, setIsChimeActive] = useState(false);
 
@@ -153,6 +159,32 @@ export const AppTopBar: React.FC<AppTopBarProps> = ({
           <Heart size={13} className="text-rose-500 fill-rose-400" />
           <span>{totalPetCount}</span>
         </div>
+
+        {/* Daily Journal Trigger */}
+        {onOpenDailyJournal && (
+          <button
+            type="button"
+            onClick={onOpenDailyJournal}
+            className="p-1.5 sm:px-2.5 sm:py-1 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-800/60 hover:bg-amber-100 transition-all text-xs font-bold shadow-2xs flex items-center gap-1 cursor-pointer"
+            title="開啟狐狐日常手記"
+          >
+            <BookOpen size={13} className="text-amber-600 dark:text-amber-400" />
+            <span className="hidden md:inline">手記</span>
+          </button>
+        )}
+
+        {/* Zen Focus Companion Trigger */}
+        {onOpenFocusCompanion && (
+          <button
+            type="button"
+            onClick={onOpenFocusCompanion}
+            className="p-1.5 sm:px-2.5 sm:py-1 rounded-xl bg-stone-900 text-amber-200 border border-stone-700 hover:bg-stone-800 transition-all text-xs font-bold shadow-2xs flex items-center gap-1 cursor-pointer"
+            title="開啟靈狐番茄鐘與陪讀專注"
+          >
+            <Clock size={13} className="text-amber-400" />
+            <span className="hidden md:inline">陪讀</span>
+          </button>
+        )}
 
         {/* Ambient Sound & Sleep Timer Trigger */}
         {onOpenAmbientMixer && (

@@ -36,13 +36,23 @@ import {
   Edit2,
   Check,
   Award,
+  Clock,
+  Layers,
+  Image as ImageIcon,
 } from 'lucide-react';
+import { useParallax } from '../hooks/useParallax';
+import { StorybookTextureOverlay, TextureStyle } from './StorybookTextureOverlay';
 
 interface AdoptedFoxViewProps {
   adoptedFox: AdoptedFox | null;
   onUpdateFox: (updater: (prev: AdoptedFox) => AdoptedFox) => void;
   onAdoptNew: (speciesId: string, customName: string) => void;
   onPetFox?: (foxId: string) => void;
+  onOpenDailyJournal?: () => void;
+  onOpenFocusCompanion?: () => void;
+  parallaxEnabled?: boolean;
+  textureStyle?: TextureStyle;
+  onTextureStyleChange?: (style: TextureStyle) => void;
 }
 
 export const AdoptedFoxView: React.FC<AdoptedFoxViewProps> = ({
@@ -50,6 +60,11 @@ export const AdoptedFoxView: React.FC<AdoptedFoxViewProps> = ({
   onUpdateFox,
   onAdoptNew,
   onPetFox,
+  onOpenDailyJournal,
+  onOpenFocusCompanion,
+  parallaxEnabled: propParallaxEnabled,
+  textureStyle: propTextureStyle,
+  onTextureStyleChange,
 }) => {
   // Adoption onboarding state if user has no companion yet
   const [selectedSpeciesId, setSelectedSpeciesId] = useState('red-fox');
@@ -74,6 +89,30 @@ export const AdoptedFoxView: React.FC<AdoptedFoxViewProps> = ({
   const [isCelebrationModalOpen, setIsCelebrationModalOpen] = useState(false);
   const [isAdventureLogOpen, setIsAdventureLogOpen] = useState(false);
   const [isChangeFoxModalOpen, setIsChangeFoxModalOpen] = useState(false);
+
+  // 繪本動態視差與景深 (Parallax & Depth of Field)
+  const [internalParallaxEnabled, setInternalParallaxEnabled] = useState(true);
+  const isParallaxEnabled =
+    propParallaxEnabled !== undefined ? propParallaxEnabled : internalParallaxEnabled;
+  const parallax = useParallax({ enabled: isParallaxEnabled, intensity: 1.15 });
+
+  // 繪本光影質感 (Texture Overlay)
+  const [internalTextureStyle, setInternalTextureStyle] = useState<TextureStyle>('paper');
+  const activeTextureStyle =
+    propTextureStyle !== undefined ? propTextureStyle : internalTextureStyle;
+  const handleToggleTexture = () => {
+    const next: TextureStyle =
+      activeTextureStyle === 'paper'
+        ? 'grain'
+        : activeTextureStyle === 'grain'
+        ? 'none'
+        : 'paper';
+    if (onTextureStyleChange) {
+      onTextureStyleChange(next);
+    } else {
+      setInternalTextureStyle(next);
+    }
+  };
 
   const activeSpecies = adoptedFox
     ? FOX_SPECIES_LIST.find((f) => f.id === adoptedFox.speciesId) || FOX_SPECIES_LIST[0]
@@ -540,7 +579,33 @@ export const AdoptedFoxView: React.FC<AdoptedFoxViewProps> = ({
         </div>
 
         {/* Quick Menu Buttons */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {onOpenDailyJournal && (
+            <motion.button
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
+              onClick={onOpenDailyJournal}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-stone-900 text-xs font-black shadow-2xs border border-amber-400 cursor-pointer"
+              title="開啟小狐狸第一人稱童趣日常日記手記"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-stone-900" />
+              <span>狐狐手記</span>
+            </motion.button>
+          )}
+
+          {onOpenFocusCompanion && (
+            <motion.button
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
+              onClick={onOpenFocusCompanion}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-amber-200 text-xs font-bold shadow-2xs border border-stone-700 cursor-pointer"
+              title="開啟靈狐極簡番茄鐘與陪讀專注模式"
+            >
+              <Clock className="w-3.5 h-3.5 text-amber-400" />
+              <span>靈狐陪讀</span>
+            </motion.button>
+          )}
+
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -576,24 +641,97 @@ export const AdoptedFoxView: React.FC<AdoptedFoxViewProps> = ({
       {/* Main Sanctuary Interactive Stage */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left / Center 3D Fox Stage Area (7 cols) */}
-        <div className="lg:col-span-7 bg-gradient-to-b from-amber-50/90 via-orange-50/30 to-white rounded-3xl p-6 sm:p-8 border border-amber-100 shadow-sm flex flex-col items-center justify-between min-h-[460px] relative overflow-hidden">
-          {/* Decorative shrine torii background faint element */}
-          <div className="absolute top-4 right-4 text-7xl opacity-5 pointer-events-none select-none">
-            ⛩️
+        <div
+          ref={parallax.containerRef}
+          style={{ perspective: '1000px' }}
+          className="lg:col-span-7 bg-gradient-to-b from-amber-50/95 via-orange-50/40 to-stone-50/80 dark:from-stone-900/90 dark:via-stone-900/60 dark:to-stone-950 rounded-3xl p-6 sm:p-8 border border-amber-100/80 dark:border-stone-800 shadow-sm flex flex-col items-center justify-between min-h-[470px] relative overflow-hidden group select-none"
+        >
+          {/* 繪本光影質感層 (WaterColor Paper / Film Grain) */}
+          <StorybookTextureOverlay texture={activeTextureStyle} opacity={0.35} />
+
+          {/* Layer 1: 遠景層 (Deep Background) - 遠山、森林霧靄與柔光 */}
+          <div
+            className="absolute inset-0 pointer-events-none transition-transform duration-75 ease-out will-change-transform"
+            style={{
+              transform: `translate3d(${parallax.deepBg.x}px, ${parallax.deepBg.y}px, 0)`,
+            }}
+          >
+            {/* 遠山暮靄水墨漸層 */}
+            <div className="absolute top-1/4 left-0 right-0 h-48 opacity-10 dark:opacity-5 bg-gradient-to-b from-emerald-900/40 via-amber-800/20 to-transparent rounded-full blur-2xl" />
+            <div className="absolute -top-10 -right-10 w-64 h-64 rounded-full bg-amber-200/25 dark:bg-amber-500/5 blur-3xl" />
           </div>
 
-          {/* Level Exp Bar at Top of Stage */}
-          <div className="w-full max-w-md space-y-1">
-            <div className="flex justify-between text-xs font-bold text-stone-700">
+          {/* Layer 2: 中景層 (Midground Habitat) - 鳥居、石燈籠與樹枝剪影 */}
+          <div
+            className="absolute inset-0 pointer-events-none transition-transform duration-75 ease-out will-change-transform"
+            style={{
+              transform: `translate3d(${parallax.midground.x}px, ${parallax.midground.y}px, 0)`,
+            }}
+          >
+            {/* 神社鳥居標誌 (中景微移) */}
+            <div className="absolute top-6 right-8 text-7xl opacity-[0.06] dark:opacity-[0.04]">
+              ⛩️
+            </div>
+            {/* 隱約石燈籠與櫻花樹梢 */}
+            <div className="absolute bottom-10 left-6 text-4xl opacity-15 dark:opacity-10">
+              🏮
+            </div>
+            <div className="absolute top-12 left-10 text-3xl opacity-20 dark:opacity-10">
+              🌸
+            </div>
+          </div>
+
+          {/* Top Stage Bar: Level Exp Bar & Parallax Mode Indicator */}
+          <div className="w-full max-w-md space-y-1.5 z-10">
+            <div className="flex justify-between items-center text-xs font-bold text-stone-700 dark:text-stone-300">
               <span className="flex items-center gap-1">
-                <Award className="w-3.5 h-3.5 text-amber-600" />
+                <Award className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                 <span>進化修為進度</span>
               </span>
-              <span>
-                {adoptedFox.exp || 0} / {(adoptedFox.level || 1) * 50} EXP ({expPercentage}%)
-              </span>
+
+              <div className="flex items-center gap-1.5">
+                {/* 繪本紋理切換 */}
+                <button
+                  type="button"
+                  onClick={handleToggleTexture}
+                  className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium border border-amber-200/80 dark:border-stone-700 bg-white/80 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:border-amber-400 transition-colors cursor-pointer"
+                  title="切換繪本光影質感：水彩手揉紙 / 35mm底片微粒 / 原畫"
+                >
+                  <ImageIcon className="w-3 h-3 text-amber-500" />
+                  <span>
+                    {activeTextureStyle === 'paper'
+                      ? '📜 水彩紙'
+                      : activeTextureStyle === 'grain'
+                      ? '🎞️ 底片微粒'
+                      : '✨ 原畫'}
+                  </span>
+                </button>
+
+                {/* 繪本視差景深切換徽章 */}
+                <button
+                  type="button"
+                  onClick={() => setInternalParallaxEnabled(!isParallaxEnabled)}
+                  className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium border transition-colors cursor-pointer ${
+                    isParallaxEnabled
+                      ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-300/60 dark:border-amber-700/60'
+                      : 'bg-stone-100 dark:bg-stone-800 text-stone-400 border-stone-200 dark:border-stone-700'
+                  }`}
+                  title="滑鼠移動時，背景、中景與前景靈狐會產生繪本立體層次位移"
+                >
+                  <Layers className="w-3 h-3" />
+                  <span>繪本視差 {isParallaxEnabled ? '開' : '關'}</span>
+                </button>
+              </div>
             </div>
-            <div className="w-full h-2.5 bg-stone-200/80 rounded-full overflow-hidden">
+
+            <div className="flex justify-between text-[11px] text-stone-500 dark:text-stone-400">
+              <span>
+                {adoptedFox.exp || 0} / {(adoptedFox.level || 1) * 50} EXP
+              </span>
+              <span>{expPercentage}%</span>
+            </div>
+
+            <div className="w-full h-2.5 bg-stone-200/80 dark:bg-stone-700/80 rounded-full overflow-hidden">
               <motion.div
                 className="h-full bg-gradient-to-r from-amber-500 to-yellow-400"
                 initial={{ width: 0 }}
@@ -603,18 +741,24 @@ export const AdoptedFoxView: React.FC<AdoptedFoxViewProps> = ({
             </div>
           </div>
 
-          {/* Center Stage: Thought Bubble + Fox Illustration */}
-          <div className="flex flex-col items-center my-6 relative">
+          {/* Layer 3: 主景層 (Foreground Character Focus) - 靈狐立繪、對話氣泡與坐墊 */}
+          <div
+            className="flex flex-col items-center my-6 relative z-10 transition-transform duration-75 ease-out will-change-transform"
+            style={{
+              transform: `translate3d(${parallax.foreground.x}px, ${parallax.foreground.y}px, 0) rotateX(${parallax.foreground.rotateX}deg) rotateY(${parallax.foreground.rotateY}deg)`,
+              transformStyle: 'preserve-3d',
+            }}
+          >
             {/* Dynamic Thought Bubble */}
             <motion.div
               key={currentThought}
               initial={{ opacity: 0, y: 10, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              className="bg-white/95 text-stone-800 text-xs sm:text-sm font-medium px-4 py-2.5 rounded-2xl shadow-md border border-amber-100 max-w-xs text-center mb-6 relative"
+              className="bg-white/95 dark:bg-stone-800/95 text-stone-800 dark:text-stone-100 text-xs sm:text-sm font-medium px-4 py-2.5 rounded-2xl shadow-md border border-amber-100 dark:border-stone-700 max-w-xs text-center mb-6 relative"
             >
               <p>💭 {currentThought}</p>
               {/* Bubble pointer tail */}
-              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-3 h-3 bg-white rotate-45 border-r border-b border-amber-100" />
+              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-3 h-3 bg-white dark:bg-stone-800 rotate-45 border-r border-b border-amber-100 dark:border-stone-700" />
             </motion.div>
 
             {/* Fox Avatar (Click to Pet!) */}
@@ -623,6 +767,9 @@ export const AdoptedFoxView: React.FC<AdoptedFoxViewProps> = ({
               className="cursor-pointer group relative active:scale-95 transition-transform"
               title="點擊直接摸摸頭聽叫聲！"
             >
+              {/* 地面日式編織蒲團坐墊陰影 */}
+              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-48 h-10 bg-amber-900/10 dark:bg-black/30 rounded-full blur-sm pointer-events-none" />
+
               <FoxIllustration
                 foxId={adoptedFox.speciesId}
                 size="xl"
@@ -631,14 +778,44 @@ export const AdoptedFoxView: React.FC<AdoptedFoxViewProps> = ({
                 accessoryId={adoptedFox.equippedAccessoryId}
                 activity={currentActivity}
               />
-              <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 text-[11px] font-bold text-stone-400 group-hover:text-rose-500 bg-white/90 px-3 py-0.5 rounded-full shadow-2xs border border-stone-200/60 transition-colors pointer-events-none">
+              <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 text-[11px] font-bold text-stone-400 group-hover:text-rose-500 bg-white/95 dark:bg-stone-800/95 px-3 py-0.5 rounded-full shadow-2xs border border-stone-200/60 dark:border-stone-700 transition-colors pointer-events-none">
                 點擊摸摸 🔊
               </span>
             </div>
           </div>
 
+          {/* Layer 4: 前景鏡頭微距景深浮塵與柔焦光斑 (Near Bokeh & Depth of Field Particles) */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 pointer-events-none z-20 transition-transform duration-75 ease-out will-change-transform overflow-hidden"
+            style={{
+              transform: `translate3d(${parallax.nearBokeh.x}px, ${parallax.nearBokeh.y}px, 0)`,
+            }}
+          >
+            {/* 近景大光斑 1 (帶柔焦模糊，鏡頭微距光學景深) */}
+            <div
+              className="absolute top-1/4 left-10 w-12 h-12 rounded-full bg-amber-400/20 dark:bg-amber-300/10"
+              style={{ filter: 'blur(3px)' }}
+            />
+            {/* 近景光斑 2 */}
+            <div
+              className="absolute bottom-16 right-12 w-16 h-16 rounded-full bg-orange-300/25 dark:bg-orange-400/10"
+              style={{ filter: 'blur(4px)' }}
+            />
+            {/* 飄落近鏡櫻花花瓣 3 */}
+            <div
+              className="absolute top-1/3 right-1/4 w-5 h-5 rounded-full bg-rose-400/30 dark:bg-rose-300/20"
+              style={{ filter: 'blur(1.5px)' }}
+            />
+            {/* 微距靈氣螢火 4 */}
+            <div
+              className="absolute bottom-1/3 left-1/4 w-8 h-8 rounded-full bg-yellow-300/25 dark:bg-yellow-200/15"
+              style={{ filter: 'blur(2.5px)' }}
+            />
+          </div>
+
           {/* Bottom Stage Hint */}
-          <div className="text-[11px] text-stone-500 font-medium text-center">
+          <div className="text-[11px] text-stone-500 dark:text-stone-400 font-medium text-center z-10">
             ✦ 提示：進行下方 10 種日常互動可獲得修為，滿級將覺醒為仙靈神狐！
           </div>
         </div>

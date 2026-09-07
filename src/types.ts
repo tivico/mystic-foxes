@@ -211,3 +211,29 @@ export interface FoxSaveData {
   season?: string;
   lastActiveTimestamp?: number;
 }
+
+// ---------------- 靈狐第一人稱日常手記 (Fox Daily Journal) ----------------
+export interface FoxDailyJournalEntry {
+  id: string;
+  date: string; // YYYY-MM-DD
+  timeStr: string; // e.g. "下午 03:20"
+  weatherMood: string; // e.g. "微風朗日" | "細雨淅瀝" | "星夜微光" | "晚霞落櫻"
+  title: string;
+  content: string;
+  favoriteMoment: string;
+  moodEmoji: string; // "🌸" | "🍯" | "💤" | "🐾" | "🍃" | "⭐"
+  statsSnapshot: {
+    happiness: number;
+    fluffiness: number;
+    level: number;
+  };
+  ownerReply?: string; // 飼主溫馨回信悄悄話
+}
+
+// ---------------- 靈狐極簡番茄鐘 / 陪讀專注 (Zen Focus Companion) ----------------
+export interface FocusSessionResult {
+  durationMinutes: number;
+  completedAt: string;
+  pineconesEarned: number;
+  modeLabel: string;
+}

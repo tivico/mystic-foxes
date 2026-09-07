@@ -20,6 +20,7 @@ import {
   Compass,
   Smile,
   Zap,
+  Clock,
 } from 'lucide-react';
 
 interface AppSidebarProps {
@@ -39,6 +40,8 @@ interface AppSidebarProps {
   onOpenCrystalBall: () => void;
   onOpenPostcards: () => void;
   onOpenSaveBackup: () => void;
+  onOpenDailyJournal: () => void;
+  onOpenFocusCompanion: () => void;
 }
 
 export const AppSidebar: React.FC<AppSidebarProps> = ({
@@ -58,6 +61,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
   onOpenCrystalBall,
   onOpenPostcards,
   onOpenSaveBackup,
+  onOpenDailyJournal,
+  onOpenFocusCompanion,
 }) => {
   const speciesMeta = adoptedFox ? FOX_SPECIES_LIST.find((f) => f.id === adoptedFox.speciesId) : null;
 
@@ -249,6 +254,50 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
             </div>
           )}
           <div className="space-y-1">
+            <button
+              type="button"
+              onClick={() => {
+                onOpenFocusCompanion();
+                onCloseMobile();
+              }}
+              className={`w-full flex items-center ${
+                isCollapsed ? 'justify-center px-2 py-2' : 'px-3 py-2'
+              } rounded-xl text-stone-700 dark:text-stone-300 hover:bg-amber-100/70 dark:hover:bg-amber-950/40 hover:text-amber-900 dark:hover:text-amber-200 transition-colors text-xs font-medium cursor-pointer group`}
+              title="靈狐極簡番茄鐘與陪讀專注"
+            >
+              <Clock size={16} className="text-amber-600 dark:text-amber-400 shrink-0" />
+              {!isCollapsed && (
+                <div className="ml-3 flex items-center justify-between flex-1">
+                  <span>靈狐陪讀專注</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-amber-200/60 dark:bg-amber-900/50 text-amber-900 dark:text-amber-300 font-bold">
+                    番茄鐘
+                  </span>
+                </div>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                onOpenDailyJournal();
+                onCloseMobile();
+              }}
+              className={`w-full flex items-center ${
+                isCollapsed ? 'justify-center px-2 py-2' : 'px-3 py-2'
+              } rounded-xl text-stone-700 dark:text-stone-300 hover:bg-orange-50 dark:hover:bg-orange-950/30 hover:text-orange-900 dark:hover:text-orange-200 transition-colors text-xs font-medium cursor-pointer`}
+              title="小狐狸第一人稱童趣日常日記手記"
+            >
+              <BookOpen size={16} className="text-orange-500 shrink-0" />
+              {!isCollapsed && (
+                <div className="ml-3 flex items-center justify-between flex-1">
+                  <span>狐狐日常手記</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-orange-100 dark:bg-orange-950/50 text-orange-800 dark:text-orange-300 font-bold">
+                    心境
+                  </span>
+                </div>
+              )}
+            </button>
+
             <button
               type="button"
               onClick={() => {

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { SeasonType, TimeOfDay } from './SeasonParticlesCanvas';
-import { Sun, Sunset, Moon, Sparkles, Calendar, ToggleLeft, ToggleRight, X } from 'lucide-react';
+import { TextureStyle } from './StorybookTextureOverlay';
+import { Sun, Sunset, Moon, Sparkles, Calendar, ToggleLeft, ToggleRight, X, Layers, Image as ImageIcon } from 'lucide-react';
 
 interface AtmosphereControllerProps {
   timeOfDay: TimeOfDay;
@@ -12,6 +13,10 @@ interface AtmosphereControllerProps {
   onAutoSyncToggle: (val: boolean) => void;
   particlesEnabled: boolean;
   onToggleParticles: (val: boolean) => void;
+  textureStyle: TextureStyle;
+  onTextureStyleChange: (style: TextureStyle) => void;
+  parallaxEnabled: boolean;
+  onToggleParallax: (val: boolean) => void;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -25,6 +30,10 @@ export function AtmosphereController({
   onAutoSyncToggle,
   particlesEnabled,
   onToggleParticles,
+  textureStyle,
+  onTextureStyleChange,
+  parallaxEnabled,
+  onToggleParallax,
   isOpen,
   onClose,
 }: AtmosphereControllerProps) {
@@ -37,7 +46,7 @@ export function AtmosphereController({
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
-          className="bg-white dark:bg-stone-900 rounded-3xl p-6 max-w-md w-full shadow-2xl border border-stone-200 dark:border-stone-800 text-stone-800 dark:text-stone-100 relative"
+          className="bg-white dark:bg-stone-900 rounded-3xl p-6 max-w-md w-full shadow-2xl border border-stone-200 dark:border-stone-800 text-stone-800 dark:text-stone-100 relative max-h-[90vh] overflow-y-auto"
         >
           {/* Header */}
           <div className="flex items-center justify-between pb-4 border-b border-stone-100 dark:border-stone-800">
@@ -46,9 +55,9 @@ export function AtmosphereController({
                 🌤️
               </div>
               <div>
-                <h3 className="text-base font-bold font-serif">晝夜光影與四季氛圍</h3>
+                <h3 className="text-base font-bold font-serif">光影質感、視差與四季氛圍</h3>
                 <p className="text-xs text-stone-500 dark:text-stone-400">
-                  純前端時間感知，沈浸式自然光影轉換
+                  純前端高階渲染：紙張紋理、動態視差與聲學景深
                 </p>
               </div>
             </div>
@@ -81,6 +90,86 @@ export function AtmosphereController({
                 className="text-amber-600 hover:text-amber-700 cursor-pointer"
               >
                 {autoSync ? (
+                  <ToggleRight className="w-7 h-7 text-amber-500" />
+                ) : (
+                  <ToggleLeft className="w-7 h-7 text-stone-400" />
+                )}
+              </button>
+            </div>
+
+            {/* 繪本光影質感層：水彩紙張紋理 / 底片微粒 */}
+            <div className="space-y-2">
+              <span className="text-xs font-semibold text-stone-500 dark:text-stone-400 flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <ImageIcon className="w-3.5 h-3.5 text-amber-500" />
+                  <span>繪本光影質感層 (Texture Overlay)：</span>
+                </span>
+                <span className="text-[10px] text-amber-600 dark:text-amber-400 font-mono">
+                  SVG Filter 加速
+                </span>
+              </span>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  {
+                    id: 'paper' as const,
+                    label: '水彩厚磅紙',
+                    desc: '手揉和紙纖維質感',
+                    icon: '📜',
+                  },
+                  {
+                    id: 'grain' as const,
+                    label: '底片膠捲微粒',
+                    desc: '35mm 復古電影感',
+                    icon: '🎞️',
+                  },
+                  {
+                    id: 'none' as const,
+                    label: '清爽原畫',
+                    desc: '純淨高對比無視效',
+                    icon: '✨',
+                  },
+                ].map((item) => {
+                  const isSelected = textureStyle === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => onTextureStyleChange(item.id)}
+                      className={`p-2.5 rounded-2xl border text-center transition-all cursor-pointer ${
+                        isSelected
+                          ? 'border-amber-500 bg-amber-50/80 dark:bg-amber-950/40 font-bold text-amber-950 dark:text-amber-100 shadow-sm ring-1 ring-amber-500/20'
+                          : 'border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800 text-stone-600 dark:text-stone-400'
+                      }`}
+                    >
+                      <span className="text-base block mb-0.5">{item.icon}</span>
+                      <span className="text-xs font-bold block">{item.label}</span>
+                      <span className="text-[10px] text-stone-400 block mt-0.5">
+                        {item.desc}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 繪本動態視差與景深開關 */}
+            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-300/40 dark:border-amber-700/40">
+              <div className="space-y-0.5">
+                <span className="text-xs font-bold text-stone-800 dark:text-stone-100 flex items-center gap-1.5">
+                  <Layers className="w-3.5 h-3.5 text-amber-600" />
+                  <span>立體繪本視差與微距景深 (Parallax)</span>
+                </span>
+                <p className="text-[11px] text-stone-500 dark:text-stone-400">
+                  滑鼠游標掠過時，遠景、中景與前景靈狐呈現層次位移與近鏡柔焦光斑
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => onToggleParallax(!parallaxEnabled)}
+                className="text-amber-600 hover:text-amber-700 cursor-pointer"
+              >
+                {parallaxEnabled ? (
                   <ToggleRight className="w-7 h-7 text-amber-500" />
                 ) : (
                   <ToggleLeft className="w-7 h-7 text-stone-400" />

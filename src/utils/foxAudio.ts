@@ -643,3 +643,38 @@ export function playWindChimeSound(): void {
   });
 }
 
+/** 12. 禪意頌缽音 (Zen Singing Bowl / Focus Bell Sound) - 專注完成深層放鬆回饋 */
+export function playZenSingingBowlSound(): void {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+
+  // Rich harmonic frequencies of a bronze singing bowl (fundamental ~432Hz + overtones)
+  const bowlHarmonics = [
+    { freq: 432, gain: 0.22, duration: 3.8 },
+    { freq: 864, gain: 0.12, duration: 2.9 },
+    { freq: 1296, gain: 0.08, duration: 2.2 },
+    { freq: 1728, gain: 0.04, duration: 1.6 },
+  ];
+
+  bowlHarmonics.forEach(({ freq, gain, duration }) => {
+    const osc = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    osc.type = 'sine';
+
+    // Slight micro-pitch vibrato for rich brass reverberation
+    osc.frequency.setValueAtTime(freq, now);
+    osc.frequency.linearRampToValueAtTime(freq + 0.8, now + duration * 0.5);
+
+    gainNode.gain.setValueAtTime(0.001, now);
+    gainNode.gain.exponentialRampToValueAtTime(gain, now + 0.04);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+    osc.connect(gainNode);
+    gainNode.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + duration + 0.1);
+  });
+}
+

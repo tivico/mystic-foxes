@@ -100,6 +100,29 @@ export function AmbientSoundMixer({ isOpen, onClose }: AmbientSoundMixerProps) {
   const [isFadingIn, setIsFadingIn] = useState(false);
   const fadeInTimerRef = useRef<number | null>(null);
 
+  // 高階聲學演算法：隨機動態音景狀態
+  const [isGenerativeActive, setIsGenerativeActive] = useState(() =>
+    ambientSoundEngine.getIsGenerativeEnabled()
+  );
+  const [latestGenerativeEvent, setLatestGenerativeEvent] = useState<{
+    type: string;
+    name: string;
+    icon: string;
+  } | null>(null);
+
+  useEffect(() => {
+    const unsub = ambientSoundEngine.onGenerativeEvent((evt) => {
+      setLatestGenerativeEvent(evt);
+    });
+    return unsub;
+  }, []);
+
+  const handleToggleGenerative = () => {
+    const nextVal = !isGenerativeActive;
+    setIsGenerativeActive(nextVal);
+    ambientSoundEngine.setGenerativeEnabled(nextVal);
+  };
+
   // Apply volume changes to engine
   const applyVolume = (channel: ChannelConfig['id'], val: number) => {
     setVolumes((prev) => {
@@ -513,6 +536,78 @@ export function AmbientSoundMixer({ isOpen, onClose }: AmbientSoundMixerProps) {
                 </div>
               );
             })}
+          </div>
+
+          {/* 高階聲學演算法：動態隨機音景 (Generative Dynamic Soundscape) */}
+          <div className="mt-5 p-4 rounded-2xl bg-gradient-to-br from-emerald-500/10 via-amber-500/5 to-transparent border border-emerald-500/30 dark:border-emerald-500/20 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-base">🌲</span>
+                <div>
+                  <h4 className="text-xs font-bold text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
+                    <span>動態演算法自然音景</span>
+                    <span className="px-1.5 py-0.2 bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-[10px] rounded-full font-mono">
+                      Generative Web Audio
+                    </span>
+                  </h4>
+                  <p className="text-[11px] text-stone-500 dark:text-stone-400">
+                    每 10~28 秒隨機即時合成，聲音永遠自然不循環
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleToggleGenerative}
+                className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  isGenerativeActive
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'bg-stone-200 dark:bg-stone-700 text-stone-500 dark:text-stone-400'
+                }`}
+              >
+                {isGenerativeActive ? '已開啟' : '已關閉'}
+              </button>
+            </div>
+
+            {/* 即時演算法觸發事件動態標籤 */}
+            {latestGenerativeEvent && (
+              <motion.div
+                key={latestGenerativeEvent.name + Date.now()}
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center gap-2 text-xs py-1.5 px-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/40"
+              >
+                <span className="animate-ping text-xs">✨</span>
+                <span>剛才隨機生成：{latestGenerativeEvent.icon} {latestGenerativeEvent.name}</span>
+              </motion.div>
+            )}
+
+            {/* 手動試聽 5 種演算法合成音符 */}
+            <div className="space-y-1.5 pt-1">
+              <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
+                點擊試聽即時演算法合成微音符：
+              </span>
+              <div className="grid grid-cols-5 gap-1.5">
+                {[
+                  { id: 'leaf' as const, label: '落葉', icon: '🍃' },
+                  { id: 'chime' as const, label: '風鈴', icon: '🔔' },
+                  { id: 'water' as const, label: '露水', icon: '💧' },
+                  { id: 'gust' as const, label: '清風', icon: '💨' },
+                  { id: 'creature' as const, label: '精靈', icon: '🦉' },
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => ambientSoundEngine.triggerSpecificGenerativeSound(item.id)}
+                    className="py-1.5 px-1 rounded-xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 hover:border-emerald-400 dark:hover:border-emerald-500 text-stone-700 dark:text-stone-200 text-center transition-colors cursor-pointer shadow-2xs"
+                    title={`即刻計算並生成${item.label}聲響`}
+                  >
+                    <div className="text-sm">{item.icon}</div>
+                    <div className="text-[10px] font-medium mt-0.5">{item.label}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="mt-6 pt-4 border-t border-stone-100 dark:border-stone-800 text-center text-xs text-stone-400 dark:text-stone-500">
